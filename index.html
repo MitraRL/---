@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>16-BIT: Пингвин и Расписание</title>
+    <title>16-BIT: Пингвин и Расписание (Big Touch Controls)</title>
     
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -38,7 +38,7 @@
             color: #d1d5db;
         }
 
-        /* --- СТАРТОВОЕ МЕНЮ ВЫБОРА УПРАВЛЕНИЯ --- */
+        /* --- СТАРТОВОЕ ОКНО ВЫБОРА УПРАВЛЕНИЯ --- */
         #start-modal {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -81,9 +81,9 @@
             background: #1e293b;
             border: 2px solid #38bdf8;
             color: #fff;
-            padding: 14px;
+            padding: 16px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -98,7 +98,7 @@
             transform: scale(0.98);
         }
         .btn-select-mode span {
-            font-size: 20px;
+            font-size: 22px;
         }
 
         /* --- КОРПУС ИГРЫ --- */
@@ -138,40 +138,42 @@
             border-radius: 4px;
         }
 
-        /* ВЕРХНЯЯ ПАНЕЛЬ МЕНЮ */
+        /* ВЕРХНЯЯ ПАНЕЛЬ МЕНЮ (УВЕЛИЧЕНА) */
         #top-bar {
             position: absolute;
             top: 8px;
             right: 8px;
             display: flex;
-            gap: 6px;
+            gap: 8px;
             z-index: 10;
         }
         .btn-top {
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid #475569;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #64748b;
             color: #fff;
-            padding: 5px 8px;
-            border-radius: 6px;
-            font-size: 11px;
+            padding: 7px 11px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
         .btn-top:active { background: #38bdf8; color: #000; }
 
-        /* НИЖНЯЯ ЧАСТЬ: СЕНСОРНЫЙ ГЕЙМПАД */
+        /* НИЖНЯЯ ЧАСТЬ: СЕНСОРНЫЙ ГЕЙМПАД (УВЕЛИЧЕН) */
         #gamepad-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
+            padding: 10px 14px;
             background: #0f1422;
             position: relative;
             border-top: 1px solid #1e293b;
         }
 
+        /* ЛЕВАЯ ЗОНА: БОЛЬШОЙ ДЖОЙСТИК (140px) */
         #joystick-touch-area {
-            flex: 1;
+            flex: 1 1 45%;
             height: 100%;
             display: flex;
             justify-content: center;
@@ -180,66 +182,78 @@
             touch-action: none;
         }
         #joystick-base {
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95));
             border: 2px solid #38bdf8;
             border-radius: 50%;
             position: relative;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.3);
         }
         #joystick-stick {
-            width: 46px;
-            height: 46px;
+            width: 56px;
+            height: 56px;
             background: radial-gradient(circle, #38bdf8, #0284c7);
             border: 2px solid #fff;
             border-radius: 50%;
             position: absolute;
-            top: 35px;
-            left: 35px;
+            top: 42px;
+            left: 42px;
             pointer-events: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.7);
         }
 
+        /* ПРАВАЯ ЗОНА: БОЛЬШИЕ КНОПКИ ДЕЙСТВИЯ */
         #actions-touch-area {
-            flex: 1;
+            flex: 1 1 55%;
             height: 100%;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(3, 62px);
+            grid-template-rows: repeat(2, 62px);
+            gap: 12px;
+            justify-content: center;
+            align-content: center;
             justify-items: center;
             align-items: center;
-            padding-left: 8px;
         }
         .touch-btn {
-            width: 54px;
-            height: 54px;
+            width: 62px;
+            height: 62px;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 22px;
             color: #fff;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 5px 12px rgba(0,0,0,0.7);
+            border: 2px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.75);
             touch-action: none;
             cursor: pointer;
         }
         .touch-btn:active, .touch-btn.active {
             transform: scale(0.9);
-            filter: brightness(1.3);
+            filter: brightness(1.35);
         }
         .btn-label {
-            font-size: 8px;
+            font-size: 9px;
             letter-spacing: 0.5px;
-            margin-top: -2px;
+            font-weight: 800;
+            margin-top: -1px;
             text-transform: uppercase;
         }
 
-        .btn-atk { background: radial-gradient(circle, #f59e0b, #b45309); border-color: #fbbf24; grid-column: 2; grid-row: 2; width: 62px; height: 62px; }
+        /* Главная кнопка УДАРА увеличена до 72px */
+        .btn-atk { 
+            background: radial-gradient(circle, #f59e0b, #b45309); 
+            border-color: #fbbf24; 
+            grid-column: 2; 
+            grid-row: 2; 
+            width: 72px; 
+            height: 72px; 
+            font-size: 26px;
+        }
         .btn-def { background: radial-gradient(circle, #8b5cf6, #5b21b6); border-color: #a78bfa; grid-column: 1; grid-row: 2; }
         .btn-ice { background: radial-gradient(circle, #38bdf8, #0369a1); border-color: #7dd3fc; grid-column: 2; grid-row: 1; }
         .btn-dash { background: radial-gradient(circle, #10b981, #047857); border-color: #34d399; grid-column: 3; grid-row: 2; }
@@ -263,8 +277,7 @@
             border: 1px solid #475569;
         }
 
-        /* --- СТИЛИЗАЦИЯ ПОД ВЫБРАННЫЙ РЕЖИМ --- */
-        /* РЕЖИМ ПК: СКРЫВАЕМ МОБИЛЬНЫЙ ГЕЙМПАД */
+        /* --- СТИЛИ РЕЖИМОВ (ПК / ТЕЛЕФОН) --- */
         body.mode-pc #gamepad-section {
             display: none !important;
         }
@@ -288,18 +301,17 @@
             display: flex;
         }
 
-        /* РЕЖИМ ТЕЛЕФОНА: ВЕРТИКАЛЬНЫЙ КОНСОЛЬНЫЙ ВИД */
         body.mode-mobile #console-wrapper {
             max-width: 540px;
             max-height: 960px;
             height: 100%;
         }
         body.mode-mobile #screen-section {
-            flex: 1 1 55%;
+            flex: 1 1 52%;
             border-bottom: 3px solid #334155;
         }
         body.mode-mobile #gamepad-section {
-            flex: 1 1 45%;
+            flex: 1 1 48%;
             display: flex;
         }
         body.mode-mobile .pc-help {
@@ -319,7 +331,7 @@
                 <span>💻</span> КОМПЬЮТЕР (Мышь + Клавиатура)
             </button>
             <button class="btn-select-mode" id="btn-choose-mobile">
-                <span>📱</span> ТЕЛЕФОН (Сенсорный Геймпад)
+                <span>📱</span> ТЕЛЕФОН (Большой Геймпад)
             </button>
         </div>
     </div>
@@ -339,7 +351,7 @@
         </div>
     </div>
 
-    <!-- НИЗ: СЕНСОРНЫЙ ГЕЙМПАД (СКРЫВАЕТСЯ НА ПК) -->
+    <!-- НИЗ: УВЕЛИЧЕННЫЙ СЕНСОРНЫЙ ГЕЙМПАД -->
     <div id="gamepad-section">
         <div id="joystick-touch-area">
             <div id="joystick-base">
@@ -567,7 +579,6 @@ document.getElementById('btn-mode-switch').addEventListener('click', () => {
     document.getElementById('start-modal').style.display = 'flex';
 });
 
-// Авто-определение при старте
 if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
     document.getElementById('btn-choose-mobile').style.borderColor = '#fbbf24';
 }
@@ -613,7 +624,7 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
-// --- ПЛАВАЮЩИЙ СЕНСОРНЫЙ ДЖОЙСТИК ---
+// --- ПЛАВАЮЩИЙ СЕНСОРНЫЙ ДЖОЙСТИК (УВЕЛИЧЕННЫЙ) ---
 const touchJoystick = {
     active: false,
     startX: 0,
@@ -649,7 +660,7 @@ function handleJoyMove(e) {
             const dx = touch.clientX - touchJoystick.startX;
             const dy = touch.clientY - touchJoystick.startY;
             const dist = Math.hypot(dx, dy);
-            const maxRadius = 40;
+            const maxRadius = 48; // Увеличенный радиус смещения
 
             let normX = dx / (dist || 1);
             let normY = dy / (dist || 1);
