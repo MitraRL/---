@@ -2,85 +2,257 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>16-BIT: Пингвин и Расписание (Crisp Text Edition) v8.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>16-BIT: Пингвин и Расписание (Mobile Vertical Edition)</title>
+    
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+    </script>
+
     <style>
-        * { box-sizing: border-box; user-select: none; }
-        body {
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
             margin: 0;
-            background: #05070a;
+            padding: 0;
+            touch-action: none;
+        }
+        body {
+            background: #06080d;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
+            position: fixed;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #d1d5db;
         }
-        #cabinet {
+
+        /* ОСНОВНОЙ КОНТЕЙНЕР (ВЕРТИКАЛЬНЫЙ КОНСОЛЬНЫЙ ФОРМАТ) */
+        #console-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            max-width: 540px; /* Идеальная ширина под телефон */
+            max-height: 960px;
+            background: linear-gradient(180deg, #111522 0%, #080a10 100%);
             position: relative;
-            padding: 8px;
-            background: linear-gradient(145deg, #1b202e, #0c0e14);
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 35px rgba(56, 189, 248, 0.2);
-            border: 2px solid #374151;
+        }
+
+        /* ВЕРХНЯЯ ЧАСТЬ: ИГРОВОЙ ЭКРАН */
+        #screen-section {
+            position: relative;
+            width: 100%;
+            flex: 1 1 55%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            border-bottom: 3px solid #334155;
+            padding: 4px;
         }
         canvas {
             display: block;
             background-color: #0b0e14;
-            width: 800px;
-            height: 560px;
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            object-fit: contain;
             border-radius: 4px;
-            cursor: crosshair;
         }
         .scanlines {
             position: absolute;
-            top: 8px; left: 8px; right: 8px; bottom: 8px;
+            top: 4px; left: 4px; right: 4px; bottom: 4px;
             pointer-events: none;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%);
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
             background-size: 100% 4px;
             border-radius: 4px;
         }
-        .controls {
-            margin-top: 10px;
+
+        /* ВЕРХНЕЕ МЕНЮ НАД ЭКРАНОМ */
+        #top-bar {
+            position: absolute;
+            top: 8px;
+            right: 8px;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            font-size: 12px;
-            font-family: monospace;
+            gap: 6px;
+            z-index: 10;
         }
-        .key {
-            color: #fbbf24;
-            font-weight: bold;
-            background: #1e293b;
-            padding: 2px 6px;
-            border-radius: 4px;
+        .btn-top {
+            background: rgba(15, 23, 42, 0.85);
             border: 1px solid #475569;
+            color: #fff;
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
         }
-        .key-range { color: #38bdf8; background: #082f49; border: 1px solid #0284c7; }
-        .key-ult { color: #f43f5e; background: #4c0519; border: 1px solid #e11d48; }
-        .key-parry { color: #a855f7; background: #2e1065; border: 1px solid #7e22ce; }
+        .btn-top:active { background: #38bdf8; color: #000; }
+
+        /* НИЖНЯЯ ЧАСТЬ: ПУЛЬТ УПРАВЛЕНИЯ (GAMEPAD) */
+        #gamepad-section {
+            flex: 1 1 45%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #0f1422;
+            position: relative;
+            border-top: 1px solid #1e293b;
+        }
+
+        /* ЛЕВАЯ ЗОНА: ПЛАВАЮЩИЙ ДЖОЙСТИК */
+        #joystick-touch-area {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            touch-action: none;
+        }
+        #joystick-base {
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+            border: 2px solid #38bdf8;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+        }
+        #joystick-stick {
+            width: 46px;
+            height: 46px;
+            background: radial-gradient(circle, #38bdf8, #0284c7);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            position: absolute;
+            top: 35px;
+            left: 35px;
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+        }
+
+        /* ПРАВАЯ ЗОНА: КНОПКИ ДЕЙСТВИЯ */
+        #actions-touch-area {
+            flex: 1;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            justify-items: center;
+            align-items: center;
+            padding-left: 8px;
+        }
+        .touch-btn {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 5px 12px rgba(0,0,0,0.7);
+            touch-action: none;
+        }
+        .touch-btn:active, .touch-btn.active {
+            transform: scale(0.9);
+            filter: brightness(1.3);
+        }
+        .btn-label {
+            font-size: 8px;
+            letter-spacing: 0.5px;
+            margin-top: -2px;
+            text-transform: uppercase;
+        }
+
+        .btn-atk { background: radial-gradient(circle, #f59e0b, #b45309); border-color: #fbbf24; grid-column: 2; grid-row: 2; width: 62px; height: 62px; }
+        .btn-def { background: radial-gradient(circle, #8b5cf6, #5b21b6); border-color: #a78bfa; grid-column: 1; grid-row: 2; }
+        .btn-ice { background: radial-gradient(circle, #38bdf8, #0369a1); border-color: #7dd3fc; grid-column: 2; grid-row: 1; }
+        .btn-dash { background: radial-gradient(circle, #10b981, #047857); border-color: #34d399; grid-column: 3; grid-row: 2; }
+        .btn-ult { background: radial-gradient(circle, #f43f5e, #be123c); border-color: #fda4af; grid-column: 3; grid-row: 1; }
+
+        /* НА ШИРОКИХ ЭКРАНАХ (ПК) */
+        @media (min-width: 800px) and (orientation: landscape) {
+            #console-wrapper {
+                max-width: 900px;
+                max-height: 640px;
+                flex-direction: row;
+            }
+            #screen-section {
+                flex: 1 1 70%;
+                border-bottom: none;
+                border-right: 3px solid #334155;
+            }
+            #gamepad-section {
+                flex: 1 1 30%;
+                flex-direction: column;
+                justify-content: space-around;
+            }
+            #actions-touch-area {
+                padding-left: 0;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div id="cabinet">
-    <!-- Внутреннее разрешение удвоено до 640x448 для идеальной четкости текста -->
-    <canvas id="game" width="640" height="448"></canvas>
-    <div class="scanlines"></div>
-</div>
+<div id="console-wrapper">
+    <!-- ВЕРХ: ИГРОВОЙ ЭКРАН -->
+    <div id="screen-section">
+        <canvas id="game" width="640" height="448"></canvas>
+        <div class="scanlines"></div>
 
-<div class="controls">
-    <div><span class="key">WASD</span> Бег</div>
-    <div><span class="key">ПКМ</span> Удар</div>
-    <div><span class="key key-parry">ЛКМ</span> Щит / Парирование</div>
-    <div><span class="key key-range">СКМ / F</span> Сюрикен (Заморозка 🧊)</div>
-    <div><span class="key key-ult">E</span> Ульта [Донат-Рейд]</div>
-    <div><span class="key">SHIFT</span> Дэш</div>
-    <div><span class="key">Q</span> Оружие</div>
-    <div><span class="key">TAB</span> Инвентарь</div>
-    <div><span class="key">R</span> Рестарт</div>
+        <div id="top-bar">
+            <button class="btn-top" id="btn-inv">🎒 ИНВЕНТАРЬ</button>
+            <button class="btn-top" id="btn-swap">🔄 СМЕНА</button>
+            <button class="btn-top" id="btn-restart">🔁 R</button>
+        </div>
+    </div>
+
+    <!-- НИЗ: СЕНСОРНЫЙ ГЕЙМПАД ДЛЯ ТЕЛЕФОНА -->
+    <div id="gamepad-section">
+        <!-- Левая половина: Плавающий Джойстик -->
+        <div id="joystick-touch-area">
+            <div id="joystick-base">
+                <div id="joystick-stick"></div>
+            </div>
+        </div>
+
+        <!-- Правая половина: Кнопки ДЕЙСТВИЙ -->
+        <div id="actions-touch-area">
+            <div class="touch-btn btn-ice" id="btn-ice">
+                ❄️<span class="btn-label">ЛЁД</span>
+            </div>
+            <div class="touch-btn btn-ult" id="btn-ult">
+                ⚡<span class="btn-label">УЛЬТА</span>
+            </div>
+            <div class="touch-btn btn-def" id="btn-def">
+                🛡️<span class="btn-label">ЩИТ</span>
+            </div>
+            <div class="touch-btn btn-atk" id="btn-atk">
+                ⚔️<span class="btn-label">УДАР</span>
+            </div>
+            <div class="touch-btn btn-dash" id="btn-dash">
+                💨<span class="btn-label">ДЭШ</span>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -111,7 +283,7 @@ function startBGM() {
         const bGain = actx.createGain();
         bOsc.type = 'sawtooth';
         bOsc.frequency.setValueAtTime((currentRoom === 'THRONE' ? bFreq * 1.2 : bFreq) / 2, t);
-        bGain.gain.setValueAtTime(0.06, t);
+        bGain.gain.setValueAtTime(0.05, t);
         bGain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
         bOsc.connect(bGain); bGain.connect(actx.destination);
         bOsc.start(t); bOsc.stop(t + 0.18);
@@ -122,7 +294,7 @@ function startBGM() {
             const lGain = actx.createGain();
             lOsc.type = 'square';
             lOsc.frequency.setValueAtTime(currentRoom === 'THRONE' ? lFreq * 1.2 : lFreq, t);
-            lGain.gain.setValueAtTime(0.03, t);
+            lGain.gain.setValueAtTime(0.025, t);
             lGain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
             lOsc.connect(lGain); lGain.connect(actx.destination);
             lOsc.start(t); lOsc.stop(t + 0.15);
@@ -133,7 +305,7 @@ function startBGM() {
             const nGain = actx.createGain();
             nOsc.type = 'triangle';
             nOsc.frequency.setValueAtTime(600, t);
-            nGain.gain.setValueAtTime(0.025, t);
+            nGain.gain.setValueAtTime(0.02, t);
             nGain.linearRampToValueAtTime(0, t + 0.04);
             nOsc.connect(nGain); nGain.connect(actx.destination);
             nOsc.start(t); nOsc.stop(t + 0.04);
@@ -258,7 +430,7 @@ function playSound(type) {
     }
 }
 
-// --- CANVAS & INPUT ---
+// --- CANVAS & SETUP ---
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
@@ -269,7 +441,6 @@ let inventoryOpen = false;
 window.addEventListener('contextmenu', e => e.preventDefault());
 
 let mousePos = { x: 160, y: 112 };
-
 canvas.addEventListener('mousemove', e => {
     const rect = canvas.getBoundingClientRect();
     const scaleX = 320 / rect.width;
@@ -278,26 +449,14 @@ canvas.addEventListener('mousemove', e => {
     mousePos.y = (e.clientY - rect.top) * scaleY;
 });
 
-let lmbDown = false;
 window.addEventListener('mousedown', e => {
     initAudio();
-    if (e.button === 0) {
-        lmbDown = true;
-        raiseShield();
-    } else if (e.button === 1) {
-        e.preventDefault();
-        shootFrostShuriken();
-    } else if (e.button === 2) {
-        e.preventDefault();
-        performMeleeAttack();
-    }
+    if (e.button === 0) raiseShield();
+    else if (e.button === 1) { e.preventDefault(); shootFrostShuriken(); }
+    else if (e.button === 2) { e.preventDefault(); performMeleeAttack(); }
 });
-
 window.addEventListener('mouseup', e => {
-    if (e.button === 0) {
-        lmbDown = false;
-        player.isShielding = false;
-    }
+    if (e.button === 0) player.isShielding = false;
 });
 
 window.addEventListener('keydown', e => {
@@ -308,15 +467,143 @@ window.addEventListener('keydown', e => {
     if (e.code === 'KeyQ') switchWeapon();
     if (e.code === 'KeyE') activateUltimate();
     if (e.code === 'KeyF' || e.code === 'KeyX') shootFrostShuriken();
-    if (e.code === 'KeyI' || e.code === 'Tab') {
-        e.preventDefault();
-        inventoryOpen = !inventoryOpen;
-    }
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight', 'Tab'].includes(e.code)) {
-        e.preventDefault();
-    }
+    if (e.code === 'KeyI' || e.code === 'Tab') { e.preventDefault(); inventoryOpen = !inventoryOpen; }
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
+
+// --- ПЛАВАЮЩИЙ СЕНСОРНЫЙ ДЖОЙСТИК (TOUCH JOYSTICK) ---
+const touchJoystick = {
+    active: false,
+    startX: 0,
+    startY: 0,
+    x: 0,
+    y: 0,
+    touchId: null
+};
+
+const joyArea = document.getElementById('joystick-touch-area');
+const joyBase = document.getElementById('joystick-base');
+const joyStick = document.getElementById('joystick-stick');
+
+function handleJoyStart(e) {
+    e.preventDefault();
+    initAudio();
+    const touch = e.changedTouches[0];
+    const rect = joyArea.getBoundingClientRect();
+    
+    touchJoystick.active = true;
+    touchJoystick.touchId = touch.identifier;
+    touchJoystick.startX = touch.clientX;
+    touchJoystick.startY = touch.clientY;
+    touchJoystick.x = 0;
+    touchJoystick.y = 0;
+
+    // Центрируем джойстик в точке касания
+    joyStick.style.transform = `translate(0px, 0px)`;
+}
+
+function handleJoyMove(e) {
+    e.preventDefault();
+    if (!touchJoystick.active) return;
+
+    for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (touch.identifier === touchJoystick.touchId) {
+            const dx = touch.clientX - touchJoystick.startX;
+            const dy = touch.clientY - touchJoystick.startY;
+            const dist = Math.hypot(dx, dy);
+            const maxRadius = 40;
+
+            let normX = dx / (dist || 1);
+            let normY = dy / (dist || 1);
+            let clamped = Math.min(dist, maxRadius);
+
+            joyStick.style.transform = `translate(${normX * clamped}px, ${normY * clamped}px)`;
+
+            if (dist > 6) {
+                touchJoystick.x = normX * (clamped / maxRadius);
+                touchJoystick.y = normY * (clamped / maxRadius);
+            } else {
+                touchJoystick.x = 0;
+                touchJoystick.y = 0;
+            }
+            break;
+        }
+    }
+}
+
+function handleJoyEnd(e) {
+    for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === touchJoystick.touchId) {
+            touchJoystick.active = false;
+            touchJoystick.touchId = null;
+            touchJoystick.x = 0;
+            touchJoystick.y = 0;
+            joyStick.style.transform = `translate(0px, 0px)`;
+            break;
+        }
+    }
+}
+
+joyArea.addEventListener('touchstart', handleJoyStart, { passive: false });
+joyArea.addEventListener('touchmove', handleJoyMove, { passive: false });
+joyArea.addEventListener('touchend', handleJoyEnd, { passive: false });
+joyArea.addEventListener('touchcancel', handleJoyEnd, { passive: false });
+
+// --- ПРИВЯЗКА КНОПОК ДЕЙСТВИЙ ---
+function bindTouch(id, onDown, onUp) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('touchstart', e => {
+        e.preventDefault();
+        initAudio();
+        btn.classList.add('active');
+        if (onDown) onDown();
+    }, { passive: false });
+
+    btn.addEventListener('touchend', e => {
+        e.preventDefault();
+        btn.classList.remove('active');
+        if (onUp) onUp();
+    }, { passive: false });
+
+    btn.addEventListener('touchcancel', () => {
+        btn.classList.remove('active');
+        if (onUp) onUp();
+    });
+}
+
+bindTouch('btn-atk', () => performMeleeAttack());
+bindTouch('btn-def', () => raiseShield(), () => { player.isShielding = false; });
+bindTouch('btn-ice', () => shootFrostShuriken());
+bindTouch('btn-dash', () => triggerDash());
+bindTouch('btn-ult', () => activateUltimate());
+
+document.getElementById('btn-inv').addEventListener('click', () => { initAudio(); inventoryOpen = !inventoryOpen; });
+document.getElementById('btn-swap').addEventListener('click', () => { initAudio(); switchWeapon(); });
+document.getElementById('btn-restart').addEventListener('click', () => { initAudio(); resetGame(); });
+
+function triggerDash() {
+    if (!player.isSliding && player.sp >= 20 && !player.isShielding) {
+        let sx = touchJoystick.active ? touchJoystick.x : 0;
+        let sy = touchJoystick.active ? touchJoystick.y : 0;
+
+        if (sx === 0 && sy === 0) {
+            if (player.facing === 'up') sy = -1;
+            if (player.facing === 'down') sy = 1;
+            if (player.facing === 'left') sx = -1;
+            if (player.facing === 'right') sx = 1;
+        }
+
+        const len = Math.hypot(sx, sy) || 1;
+        player.isSliding = true;
+        player.slideTimer = 18;
+        player.slideDir = { x: sx / len, y: sy / len };
+        player.sp -= 20;
+        player.invul = 20;
+        playSound('item');
+    }
+}
 
 let screenShake = 0;
 let floatingTexts = [];
@@ -420,7 +707,7 @@ let playerShots = [];
 
 let dialog = {
     speaker: "ПИНГВИН",
-    text: "Катакомбы Чата! Найди 3 свитка расписания, чтобы открыть Северные Ворота!",
+    text: "Используй джойстик слева и кнопки справа! Заморозь Бамбочей сюрикеном ❄️!",
     timer: 260, portrait: 'penguin'
 };
 
@@ -447,14 +734,21 @@ function shootFrostShuriken() {
         player.sp -= 20;
         playSound('frost_shuriken');
 
-        const angle = Math.atan2(mousePos.y - (player.y + 9), mousePos.x - (player.x + 8));
-        const speed = 4.0;
+        let vx = 0, vy = 0;
+        if (touchJoystick.active && (touchJoystick.x !== 0 || touchJoystick.y !== 0)) {
+            vx = touchJoystick.x * 4.0;
+            vy = touchJoystick.y * 4.0;
+        } else {
+            if (player.facing === 'right') vx = 4.0;
+            if (player.facing === 'left') vx = -4.0;
+            if (player.facing === 'up') vy = -4.0;
+            if (player.facing === 'down') vy = 4.0;
+        }
 
         playerShots.push({
             x: player.x + 8,
             y: player.y + 9,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
+            vx, vy,
             life: 75,
             type: 'frost_shuriken',
             rot: 0
@@ -516,7 +810,7 @@ function activateUltimate() {
 function addHype(amount) {
     player.hype = Math.min(player.maxHype, player.hype + amount);
     if (player.hype === player.maxHype) {
-        addFloatingText(player.x - 10, player.y - 12, "HYPE 100%! [E]", '#fbbf24');
+        addFloatingText(player.x - 10, player.y - 12, "HYPE 100%! [⚡]", '#fbbf24');
     }
 }
 
@@ -585,8 +879,7 @@ function spawnSparks(x, y, color, count = 6) {
     }
 }
 
-// --- RENDER HELPERS (PIXEL WORLD) ---
-
+// --- RENDER HELPERS ---
 function drawShadow(x, y, w, h) {
     ctx.fillStyle = 'rgba(5, 7, 13, 0.45)';
     ctx.beginPath();
@@ -767,9 +1060,11 @@ function draw16BitMinion(m) {
     if (m.freezeTimer > 0) {
         ctx.fillStyle = 'rgba(165, 243, 252, 0.65)';
         ctx.fillRect(mx - 2, my - 2, 18, 18);
-        ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1;
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1;
         ctx.strokeRect(mx - 2, my - 2, 18, 18);
-        ctx.fillStyle = '#fff'; ctx.fillRect(mx, my, 4, 2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(mx, my, 4, 2);
     }
 }
 
@@ -887,23 +1182,7 @@ function update() {
     }
 
     if ((keys['ShiftLeft'] || keys['ShiftRight']) && !player.isSliding && player.sp >= 20 && !player.isShielding) {
-        let sx = 0, sy = 0;
-        if (keys['KeyW'] || keys['ArrowUp']) sy = -1;
-        if (keys['KeyS'] || keys['ArrowDown']) sy = 1;
-        if (keys['KeyA'] || keys['ArrowLeft']) sx = -1;
-        if (keys['KeyD'] || keys['ArrowRight']) sx = 1;
-        if (sx === 0 && sy === 0) {
-            if (player.facing === 'up') sy = -1;
-            if (player.facing === 'down') sy = 1;
-            if (player.facing === 'left') sx = -1;
-            if (player.facing === 'right') sx = 1;
-        }
-        player.isSliding = true;
-        player.slideTimer = 18;
-        player.slideDir = { x: sx, y: sy };
-        player.sp -= 20;
-        player.invul = 20;
-        playSound('item');
+        triggerDash();
     }
 
     if (player.isSliding) {
@@ -919,10 +1198,21 @@ function update() {
         if (keys['KeyA'] || keys['ArrowLeft'])  { dx = -1; player.facing = 'left'; }
         if (keys['KeyD'] || keys['ArrowRight']) { dx = 1;  player.facing = 'right'; }
 
+        // Сенсорный джойстик
+        if (touchJoystick.active && (touchJoystick.x !== 0 || touchJoystick.y !== 0)) {
+            dx = touchJoystick.x;
+            dy = touchJoystick.y;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                player.facing = dx > 0 ? 'right' : 'left';
+            } else {
+                player.facing = dy > 0 ? 'down' : 'up';
+            }
+        }
+
         if (dx !== 0 || dy !== 0) {
             player.walkTimer++;
             if (player.walkTimer > 7) { player.walkFrame = (player.walkFrame + 1) % 2; player.walkTimer = 0; }
-            if (dx !== 0 && dy !== 0) { dx *= 0.7071; dy *= 0.7071; }
+            if (!touchJoystick.active && dx !== 0 && dy !== 0) { dx *= 0.7071; dy *= 0.7071; }
             const currentSpeed = player.isShielding ? player.speed * 0.5 : player.speed;
             player.x += dx * currentSpeed;
             player.y += dy * currentSpeed;
@@ -964,7 +1254,7 @@ function update() {
                         player.weapon = 'golden_fish';
                         dialog = {
                             speaker: "НАХОДКА!",
-                            text: "Получена ЗОЛОТАЯ РЫБА! Двойной урон ПКМ и волны при полном HP!",
+                            text: "Получена ЗОЛОТАЯ РЫБА! Двойной урон и волны при полном HP!",
                             timer: 300, portrait: 'penguin'
                         };
                     } else if (c.item === 'armored_scarf') {
@@ -1252,11 +1542,11 @@ function update() {
     }
 }
 
-// --- RENDER (ДВУХСЛОЙНЫЙ РЕНДЕР: 16-BIT МИР + ЧЕТКИЙ ТЕКСТ) ---
+// --- RENDER (ЧЁТКИЙ ДВУХСЛОЙНЫЙ ВЫВОД) ---
 function draw() {
     ctx.save();
 
-    // Слой 1: Пиксельный мир 16-бит (масштабирование 2x)
+    // СЛОЙ 1: ПИКСЕЛЬНЫЙ МИР (640x448 -> scale 2x)
     ctx.save();
     ctx.scale(2, 2);
 
@@ -1405,7 +1695,6 @@ function draw() {
     // СЛОЙ 2: ЧЁТКИЙ UI, ТЕКСТ И ДИАЛОГИ (640x448)
     // ==========================================
 
-    // Босс Название в Тронном Зале
     if (currentRoom === 'THRONE' && boss.active && boss.hp > 0) {
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 12px monospace';
@@ -1414,23 +1703,21 @@ function draw() {
         ctx.textAlign = 'left';
     }
 
-    // Надпись у открытых ворот в Катакомбах
     if (currentRoom === 'CATACOMBS' && gateOpened) {
         ctx.fillStyle = '#38bdf8';
         ctx.font = 'bold 12px monospace';
         ctx.fillText("▲ ВХОД В ТРОННЫЙ ЗАЛ ▲", 240, 36);
     }
 
-    // Летающие цифры урона (Crisp Text)
     floatingTexts.forEach(ft => {
         ctx.font = 'bold 14px monospace';
         ctx.fillStyle = '#000';
-        ctx.fillText(ft.text, ft.x * 2 + 1, ft.y * 2 + 1); // Тень
+        ctx.fillText(ft.text, ft.x * 2 + 1, ft.y * 2 + 1);
         ctx.fillStyle = ft.color;
         ctx.fillText(ft.text, ft.x * 2, ft.y * 2);
     });
 
-    // HUD: Сердечки игрока
+    // Сердечки
     for (let i = 0; i < player.maxHp / 2; i++) {
         const hVal = player.hp - i * 2;
         const hx = 40 + i * 22;
@@ -1443,7 +1730,7 @@ function draw() {
         }
     }
 
-    // HUD: Шкала HYPE
+    // Шкала Хайпа
     const isHypeMax = player.hype === player.maxHype;
     ctx.fillStyle = '#0f172a'; ctx.fillRect(40, 34, 100, 10);
     ctx.fillStyle = isHypeMax ? ((Math.floor(Date.now() / 150) % 2 === 0) ? '#fbbf24' : '#f43f5e') : '#a855f7';
@@ -1452,10 +1739,9 @@ function draw() {
 
     if (isHypeMax) {
         ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 11px monospace';
-        ctx.fillText("ULT [E] READY!", 148, 43);
+        ctx.fillText("ULT READY!", 148, 43);
     }
 
-    // HUD: Оружие и Свитки
     ctx.fillStyle = '#0f172a'; ctx.fillRect(460, 12, 70, 24);
     ctx.strokeStyle = '#475569'; ctx.strokeRect(460, 12, 70, 24);
     ctx.fillStyle = player.weapon === 'golden_fish' ? '#fbbf24' : '#38bdf8';
@@ -1465,7 +1751,7 @@ function draw() {
     ctx.fillStyle = '#fde68a'; ctx.font = 'bold 13px monospace';
     ctx.fillText(`СВИТКИ: ${player.schedules}/${player.totalSchedules}`, 540, 28);
 
-    // ЧЁТКОЕ ДИАЛОГОВОЕ ОКНО (Крупный читаемый шрифт)
+    // Диалоговое окно
     if (dialog.timer > 0) {
         const dy = 320;
         ctx.fillStyle = 'rgba(15, 23, 42, 0.97)';
@@ -1473,7 +1759,6 @@ function draw() {
         ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
         ctx.strokeRect(32, dy, 576, 104);
 
-        // Портрет
         ctx.fillStyle = '#0f172a'; ctx.fillRect(44, dy + 12, 64, 64);
         ctx.strokeStyle = '#64748b'; ctx.strokeRect(44, dy + 12, 64, 64);
 
@@ -1490,15 +1775,12 @@ function draw() {
             ctx.fillStyle = '#fbcfe8'; ctx.fillRect(56, dy + 40, 40, 28);
         }
 
-        // Имя спикера
         ctx.fillStyle = '#38bdf8';
         ctx.font = 'bold 15px monospace';
         ctx.fillText(dialog.speaker, 124, dy + 26);
 
-        // Текст диалога (Чёткий крупный шрифт 13px)
         ctx.fillStyle = '#f8fafc';
         ctx.font = '13px monospace';
-
         const words = dialog.text.split(' ');
         let line = '', lineY = dy + 50;
         for (let n = 0; n < words.length; n++) {
@@ -1514,7 +1796,6 @@ function draw() {
         ctx.fillText(line, 124, lineY);
     }
 
-    // МЕНЮ ИНВЕНТАРЯ (ЧЁТКИЙ ШРИФТ)
     if (inventoryOpen) {
         ctx.fillStyle = 'rgba(11, 15, 25, 0.96)';
         ctx.fillRect(60, 50, 520, 348);
@@ -1525,7 +1806,7 @@ function draw() {
         ctx.fillText("=== МЕНЮ ЭКИПИРОВКИ ===", 190, 85);
 
         ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 14px monospace';
-        ctx.fillText("[ОРУЖИЕ] (ПКМ — Удар, Q — Смена):", 90, 130);
+        ctx.fillText("[ОРУЖИЕ] (ПКМ / ⚔️):", 90, 130);
         ctx.fillStyle = '#fff'; ctx.font = '13px monospace';
         if (player.hasGoldenFish) {
             ctx.fillText(player.weapon === 'golden_fish' ? "► ЗОЛОТАЯ РЫБА (Урон: x2 + Волна)" : "  Синяя рыба-меч (Урон: 1)", 90, 155);
@@ -1535,12 +1816,12 @@ function draw() {
         }
 
         ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 14px monospace';
-        ctx.fillText("[ДАЛЬНЯЯ МАГИЯ] (СКМ / F / X):", 90, 215);
+        ctx.fillText("[ДАЛЬНЯЯ МАГИЯ] (СКМ / ❄️):", 90, 215);
         ctx.fillStyle = '#fff'; ctx.font = '13px monospace';
         ctx.fillText("► Морозный Сюрикен (Заморозка врагов 1.5с 🧊)", 90, 240);
 
         ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 14px monospace';
-        ctx.fillText("[БРОНЯ] (ЛКМ — Щит/Парирование):", 90, 280);
+        ctx.fillText("[БРОНЯ] (ЛКМ / 🛡️):", 90, 280);
         ctx.fillStyle = '#fff'; ctx.font = '13px monospace';
         if (player.hasArmoredScarf) {
             ctx.fillText("► Бронированный стальной шарф (+2 HP & Защита)", 90, 305);
@@ -1549,7 +1830,7 @@ function draw() {
         }
 
         ctx.fillStyle = '#9ca3af'; ctx.font = '12px monospace';
-        ctx.fillText("Нажмите [TAB] или [I], чтобы закрыть", 185, 370);
+        ctx.fillText("Нажмите [ИНВЕНТАРЬ] или [TAB], чтобы закрыть", 170, 370);
     }
 
     if (transition.active) {
@@ -1566,7 +1847,7 @@ function draw() {
         ctx.fillStyle = '#4ade80'; ctx.font = '15px monospace';
         ctx.fillText("Стрим Фаворита: СЕГОДНЯ В 19:00 ПО МСК!", 320, 230);
         ctx.fillStyle = '#9ca3af'; ctx.font = '13px monospace';
-        ctx.fillText("Нажмите [R], чтобы сыграть снова", 320, 280);
+        ctx.fillText("Нажмите [🔁 R], чтобы сыграть снова", 320, 280);
         ctx.textAlign = 'left';
     } else if (gameState === 'GAMEOVER') {
         ctx.fillStyle = 'rgba(20, 5, 8, 0.94)';
@@ -1575,7 +1856,7 @@ function draw() {
         ctx.textAlign = 'center';
         ctx.fillText("ВЫ ПОГИБЛИ", 320, 190);
         ctx.fillStyle = '#f59e0b'; ctx.font = '14px monospace';
-        ctx.fillText("Нажмите [R], чтобы начать заново", 320, 250);
+        ctx.fillText("Нажмите [🔁 R], чтобы начать заново", 320, 250);
         ctx.textAlign = 'left';
     }
 
