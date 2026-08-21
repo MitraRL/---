@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>16-BIT: Пингвин и Расписание (Big Touch Controls)</title>
+    <title>16-BIT: Пингвин и Расписание (Everton Stream Ending)</title>
     
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -97,9 +97,7 @@
             border-color: #fff;
             transform: scale(0.98);
         }
-        .btn-select-mode span {
-            font-size: 22px;
-        }
+        .btn-select-mode span { font-size: 22px; }
 
         /* --- КОРПУС ИГРЫ --- */
         #console-wrapper {
@@ -111,7 +109,6 @@
             background: linear-gradient(180deg, #111522 0%, #080a10 100%);
         }
 
-        /* ВЕРХНЯЯ ЧАСТЬ: ИГРОВОЙ ЭКРАН */
         #screen-section {
             position: relative;
             width: 100%;
@@ -138,7 +135,6 @@
             border-radius: 4px;
         }
 
-        /* ВЕРХНЯЯ ПАНЕЛЬ МЕНЮ (УВЕЛИЧЕНА) */
         #top-bar {
             position: absolute;
             top: 8px;
@@ -160,7 +156,7 @@
         }
         .btn-top:active { background: #38bdf8; color: #000; }
 
-        /* НИЖНЯЯ ЧАСТЬ: СЕНСОРНЫЙ ГЕЙМПАД (УВЕЛИЧЕН) */
+        /* --- СЕНСОРНЫЙ ГЕЙМПАД --- */
         #gamepad-section {
             display: flex;
             justify-content: space-between;
@@ -171,7 +167,6 @@
             border-top: 1px solid #1e293b;
         }
 
-        /* ЛЕВАЯ ЗОНА: БОЛЬШОЙ ДЖОЙСТИК (140px) */
         #joystick-touch-area {
             flex: 1 1 45%;
             height: 100%;
@@ -203,7 +198,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.7);
         }
 
-        /* ПРАВАЯ ЗОНА: БОЛЬШИЕ КНОПКИ ДЕЙСТВИЯ */
         #actions-touch-area {
             flex: 1 1 55%;
             height: 100%;
@@ -244,14 +238,11 @@
             text-transform: uppercase;
         }
 
-        /* Главная кнопка УДАРА увеличена до 72px */
         .btn-atk { 
             background: radial-gradient(circle, #f59e0b, #b45309); 
             border-color: #fbbf24; 
-            grid-column: 2; 
-            grid-row: 2; 
-            width: 72px; 
-            height: 72px; 
+            grid-column: 2; grid-row: 2; 
+            width: 72px; height: 72px; 
             font-size: 26px;
         }
         .btn-def { background: radial-gradient(circle, #8b5cf6, #5b21b6); border-color: #a78bfa; grid-column: 1; grid-row: 2; }
@@ -277,10 +268,8 @@
             border: 1px solid #475569;
         }
 
-        /* --- СТИЛИ РЕЖИМОВ (ПК / ТЕЛЕФОН) --- */
-        body.mode-pc #gamepad-section {
-            display: none !important;
-        }
+        /* РЕЖИМ ПК */
+        body.mode-pc #gamepad-section { display: none !important; }
         body.mode-pc #console-wrapper {
             max-width: 840px;
             max-height: 600px;
@@ -297,35 +286,26 @@
             width: 800px;
             border-bottom: none;
         }
-        body.mode-pc .pc-help {
-            display: flex;
-        }
+        body.mode-pc .pc-help { display: flex; }
 
+        /* РЕЖИМ ТЕЛЕФОНА */
         body.mode-mobile #console-wrapper {
             max-width: 540px;
             max-height: 960px;
             height: 100%;
         }
-        body.mode-mobile #screen-section {
-            flex: 1 1 52%;
-            border-bottom: 3px solid #334155;
-        }
-        body.mode-mobile #gamepad-section {
-            flex: 1 1 48%;
-            display: flex;
-        }
-        body.mode-mobile .pc-help {
-            display: none !important;
-        }
+        body.mode-mobile #screen-section { flex: 1 1 52%; border-bottom: 3px solid #334155; }
+        body.mode-mobile #gamepad-section { flex: 1 1 48%; display: flex; }
+        body.mode-mobile .pc-help { display: none !important; }
     </style>
 </head>
 <body class="mode-pc">
 
-<!-- СТАРТОВОЕ ОКНО ВЫБОРА УПРАВЛЕНИЯ -->
+<!-- ВЫБОР УПРАВЛЕНИЯ -->
 <div id="start-modal">
     <div class="modal-box">
         <div class="modal-title">★ ПИНГВИН И РАСПИСАНИЕ ★</div>
-        <div class="modal-subtitle">Выберите ваше устройство для удобной игры:</div>
+        <div class="modal-subtitle">Выберите устройство:</div>
         <div class="modal-buttons">
             <button class="btn-select-mode" id="btn-choose-pc">
                 <span>💻</span> КОМПЬЮТЕР (Мышь + Клавиатура)
@@ -338,7 +318,6 @@
 </div>
 
 <div id="console-wrapper">
-    <!-- ВЕРХ: ИГРОВОЙ ЭКРАН -->
     <div id="screen-section">
         <canvas id="game" width="640" height="448"></canvas>
         <div class="scanlines"></div>
@@ -351,7 +330,6 @@
         </div>
     </div>
 
-    <!-- НИЗ: УВЕЛИЧЕННЫЙ СЕНСОРНЫЙ ГЕЙМПАД -->
     <div id="gamepad-section">
         <div id="joystick-touch-area">
             <div id="joystick-base">
@@ -407,11 +385,29 @@ function initAudio() {
 const bassNotes = [110, 110, 130, 110, 146, 110, 130, 123];
 const leadNotes = [220, 0, 261, 293, 329, 293, 261, 0, 329, 392, 440, 392, 329, 293, 261, 246];
 
+// Победный победный мажорный трек для стрима
+const victoryLead = [329, 392, 523, 659, 783, 659, 523, 392, 440, 554, 659, 880, 783, 659, 523, 659];
+
 function startBGM() {
     if (bgmTimer) return;
     bgmTimer = setInterval(() => {
         if (!musicEnabled || !actx || inventoryOpen || transition.active) return;
         const t = actx.currentTime;
+
+        if (gameState === 'VICTORY') {
+            // Торжественная победная музыка стрима
+            const note = victoryLead[bgmStep % victoryLead.length];
+            const vOsc = actx.createOscillator();
+            const vGain = actx.createGain();
+            vOsc.type = 'triangle';
+            vOsc.frequency.setValueAtTime(note, t);
+            vGain.gain.setValueAtTime(0.05, t);
+            vGain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+            vOsc.connect(vGain); vGain.connect(actx.destination);
+            vOsc.start(t); vOsc.stop(t + 0.16);
+            bgmStep++;
+            return;
+        }
 
         const bFreq = bassNotes[bgmStep % bassNotes.length];
         const bOsc = actx.createOscillator();
@@ -528,21 +524,21 @@ function playSound(type) {
     } else if (type === 'coin') {
         const osc = actx.createOscillator(); const gain = actx.createGain();
         osc.type = 'sine'; osc.frequency.setValueAtTime(1200 + Math.random()*400, t);
-        gain.gain.setValueAtTime(0.15, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.08);
+        gain.gain.setValueAtTime(0.15, t); gain.exponentialRampToValueAtTime(0.01, t + 0.08);
         osc.connect(gain); gain.connect(actx.destination);
         osc.start(t); osc.stop(t + 0.08);
     } else if (type === 'golden_beam') {
         const osc = actx.createOscillator(); const gain = actx.createGain();
         osc.type = 'triangle'; osc.frequency.setValueAtTime(600, t);
         osc.frequency.linearRampToValueAtTime(1200, t + 0.15);
-        gain.gain.setValueAtTime(0.25, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.15);
+        gain.gain.setValueAtTime(0.25, t); gain.linearRampToValueAtTime(0.01, t + 0.15);
         osc.connect(gain); gain.connect(actx.destination);
         osc.start(t); osc.stop(t + 0.15);
     } else if (type === 'fanfare') {
-        [440, 554, 659, 880].forEach((f, i) => {
+        [440, 554, 659, 880, 1046].forEach((f, i) => {
             const osc = actx.createOscillator(); const gain = actx.createGain();
             osc.type = 'square'; osc.frequency.setValueAtTime(f, t + i * 0.1);
-            gain.gain.setValueAtTime(0.2, t + i * 0.1);
+            gain.gain.setValueAtTime(0.25, t + i * 0.1);
             gain.gain.linearRampToValueAtTime(0.01, t + (i + 1) * 0.1);
             osc.connect(gain); gain.connect(actx.destination);
             osc.start(t + i * 0.1); osc.stop(t + (i + 1) * 0.1);
@@ -550,7 +546,7 @@ function playSound(type) {
     } else if (type === 'hit') {
         const osc = actx.createOscillator(); const gain = actx.createGain();
         osc.type = 'square'; osc.frequency.setValueAtTime(130, t);
-        gain.gain.setValueAtTime(0.3, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.1);
+        gain.gain.setValueAtTime(0.3, t); gain.linearRampToValueAtTime(0.01, t + 0.1);
         osc.connect(gain); gain.connect(actx.destination);
         osc.start(t); osc.stop(t + 0.1);
     } else if (type === 'item') {
@@ -604,6 +600,10 @@ canvas.addEventListener('mousemove', e => {
 
 window.addEventListener('mousedown', e => {
     initAudio();
+    if (gameState === 'VICTORY') {
+        triggerStreamReaction();
+        return;
+    }
     if (e.button === 0) raiseShield();
     else if (e.button === 1) { e.preventDefault(); shootFrostShuriken(); }
     else if (e.button === 2) { e.preventDefault(); performMeleeAttack(); }
@@ -624,7 +624,7 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
-// --- ПЛАВАЮЩИЙ СЕНСОРНЫЙ ДЖОЙСТИК (УВЕЛИЧЕННЫЙ) ---
+// --- ПЛАВАЮЩИЙ СЕНСОРНЫЙ ДЖОЙСТИК ---
 const touchJoystick = {
     active: false,
     startX: 0,
@@ -640,6 +640,7 @@ const joyStick = document.getElementById('joystick-stick');
 function handleJoyStart(e) {
     e.preventDefault();
     initAudio();
+    if (gameState === 'VICTORY') return;
     const touch = e.changedTouches[0];
     touchJoystick.active = true;
     touchJoystick.touchId = touch.identifier;
@@ -660,7 +661,7 @@ function handleJoyMove(e) {
             const dx = touch.clientX - touchJoystick.startX;
             const dy = touch.clientY - touchJoystick.startY;
             const dist = Math.hypot(dx, dy);
-            const maxRadius = 48; // Увеличенный радиус смещения
+            const maxRadius = 48;
 
             let normX = dx / (dist || 1);
             let normY = dy / (dist || 1);
@@ -720,7 +721,10 @@ function bindTouch(id, onDown, onUp) {
     });
 }
 
-bindTouch('btn-atk', () => performMeleeAttack());
+bindTouch('btn-atk', () => {
+    if (gameState === 'VICTORY') triggerStreamReaction();
+    else performMeleeAttack();
+});
 bindTouch('btn-def', () => raiseShield(), () => { player.isShielding = false; });
 bindTouch('btn-ice', () => shootFrostShuriken());
 bindTouch('btn-dash', () => triggerDash());
@@ -752,6 +756,7 @@ function triggerDash() {
     }
 }
 
+// --- GAME OBJECTS & STATE ---
 let screenShake = 0;
 let floatingTexts = [];
 let particles = [];
@@ -759,7 +764,7 @@ let drops = [];
 let ultProjectiles = [];
 let ultActive = false;
 let ultTimer = 0;
-let gameState = 'PLAY';
+let gameState = 'PLAY'; // PLAY, VICTORY, GAMEOVER
 let torchFrame = 0;
 let torchTimer = 0;
 
@@ -857,6 +862,42 @@ let dialog = {
     text: "Катакомбы Чата! Найди 3 свитка расписания и открой ворота!",
     timer: 260, portrait: 'penguin'
 };
+
+// --- СИСТЕМА ИНТЕРАКТИВНОГО СТРИМА ФАВОРИТА (VICTORY SCENE) ---
+let streamChat = [
+    { user: "[Mod] Модер_Димон", text: "Стрим запущен! Всем привет!", color: '#38bdf8' },
+    { user: "Олег_2004", text: "ПИНГВИН — НАСТОЯЩИЙ MVP!", color: '#fbbf24' },
+    { user: "Everton_Fan", text: "Футболка Эвертона имба! 💙", color: '#60a5fa' }
+];
+
+const chatPool = [
+    { user: "Чаттер_12", text: "Колянчик 1:6 в слезах роняет геймпад KEKW", color: '#e879f9' },
+    { user: "Донатер_777", text: "ДОНАТ 500₽: Спасибо пингвину за стрим!", color: '#4ade80' },
+    { user: "Sub_Pro", text: "PogChamp Наконец-то дождались!", color: '#f43f5e' },
+    { user: "Everton_Ultra", text: "UP THE TOFFEES! ВПЕРЁД ЭВЕРТОН!", color: '#38bdf8' },
+    { user: "Бамбоч_Реформированный", text: "Простите, мы больше не будем токсичить!", color: '#c084fc' },
+    { user: "Gamer_2024", text: "Золотая рыба зарешала боссфайт!", color: '#fbbf24' },
+    { user: "Чаттер_99", text: "Стрим сегодня в 19:00 по расписанию!", color: '#a3e635' },
+    { user: "Viewer_VIP", text: "LUL Генерал 1:6 перегрелся!", color: '#f472b6' }
+];
+
+let streamReactionParticles = [];
+let streamChatTimer = 0;
+let streamFavoritAnim = 0;
+
+function triggerStreamReaction() {
+    playSound('coin');
+    for (let i = 0; i < 4; i++) {
+        streamReactionParticles.push({
+            x: 180 + (Math.random() - 0.5) * 60,
+            y: 220,
+            vy: -2 - Math.random() * 2,
+            vx: (Math.random() - 0.5) * 1.5,
+            char: Math.random() > 0.5 ? '💙' : '⭐',
+            life: 60
+        });
+    }
+}
 
 function spawnBambochPortal(customX, customY) {
     const px = customX !== undefined ? customX : Math.floor(Math.random() * 240 + 35);
@@ -1215,8 +1256,88 @@ function draw16BitMinion(m) {
     }
 }
 
+// --- ОТРИСОВКА ПИКСЕЛЬНОГО ФАВОРИТА В ФУТБОЛКЕ ЭВЕРТОНА (БЕЗ НАУШНИКОВ) ---
+function draw16BitFavoritStreamer(x, y) {
+    // Волосы (стильная 16-битная причёска, БЕЗ наушников)
+    ctx.fillStyle = '#3e2723';
+    ctx.fillRect(x + 12, y, 24, 10);
+    ctx.fillRect(x + 8, y + 4, 32, 8);
+    ctx.fillStyle = '#5d4037';
+    ctx.fillRect(x + 16, y + 2, 16, 4); // Блик на волосах
+
+    // Лицо Фаворита (улыбка, бородка)
+    ctx.fillStyle = '#ffd1b3';
+    ctx.fillRect(x + 12, y + 10, 24, 22);
+    ctx.fillStyle = '#3e2723';
+    ctx.fillRect(x + 16, y + 16, 4, 3); // Глаз 1
+    ctx.fillRect(x + 28, y + 16, 4, 3); // Глаз 2
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x + 18, y + 16, 2, 1); ctx.fillRect(x + 30, y + 16, 2, 1);
+
+    // Улыбка
+    ctx.fillStyle = '#b71c1c';
+    ctx.fillRect(x + 20, y + 24, 8, 3);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x + 22, y + 24, 4, 1);
+
+    // Легкая щетина / бородка
+    ctx.fillStyle = '#6d4c41';
+    ctx.fillRect(x + 16, y + 28, 16, 3);
+
+    // ФУТБОЛКА ФК «ЭВЕРТОН» (EVERTON FC)
+    // Королевский синий цвет (Royal Everton Blue #003399)
+    ctx.fillStyle = '#003399';
+    ctx.fillRect(x + 4, y + 32, 40, 36);
+
+    // Белый воротник (White Everton Collar)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x + 18, y + 32, 12, 6);
+    ctx.fillStyle = '#003399';
+    ctx.fillRect(x + 22, y + 32, 4, 4); // V-вырез
+
+    // Белые манжеты / акценты на рукавах
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x + 4, y + 54, 8, 4);
+    ctx.fillRect(x + 36, y + 54, 8, 4);
+
+    // Эмблема / Башня Эвертона на груди (Everton Crest)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x + 10, y + 40, 6, 6);
+    ctx.fillStyle = '#003399';
+    ctx.fillRect(x + 12, y + 42, 2, 2);
+
+    // Стримерский микрофон на стойке
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(x + 28, y + 38, 10, 16);
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(x + 30, y + 36, 6, 8);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(x + 32, y + 54, 2, 14); // Стойка
+}
+
 // --- UPDATE LOOP ---
 function update() {
+    // ОБНОВЛЕНИЕ ЧАТА В КОНЦОВКЕ
+    if (gameState === 'VICTORY') {
+        streamChatTimer++;
+        if (streamChatTimer > 45) {
+            streamChatTimer = 0;
+            const randomMsg = chatPool[Math.floor(Math.random() * chatPool.length)];
+            streamChat.push(randomMsg);
+            if (streamChat.length > 7) streamChat.shift();
+        }
+
+        // Частицы реакций стрима
+        for (let i = streamReactionParticles.length - 1; i >= 0; i--) {
+            const p = streamReactionParticles[i];
+            p.y += p.vy;
+            p.x += p.vx;
+            p.life--;
+            if (p.life <= 0) streamReactionParticles.splice(i, 1);
+        }
+        return;
+    }
+
     if (transition.active) {
         if (transition.state === 'in') {
             transition.alpha += 0.08;
@@ -1618,13 +1739,9 @@ function update() {
                 spawnSparks(boss.x + 14, boss.y + 16, '#fbbf24', 12);
 
                 if (boss.hp <= 0) {
-                    gameState = 'VICTORY'; screenShake = 22;
-                    spawnSparks(boss.x + 14, boss.y + 16, '#fbbf24', 50);
-                    dialog = {
-                        speaker: "ГЕНЕРАЛ 1:6",
-                        text: "НЕЕЕТ! Мой геймпад сломан... Стрим Фаворита СЕГОДНЯ В 19:00!",
-                        timer: 450, portrait: 'boss'
-                    };
+                    gameState = 'VICTORY'; // ПЕРЕХОД В КОНЦОВКУ СТРИМА!
+                    screenShake = 25;
+                    playSound('fanfare');
                 }
             }
         }
@@ -1688,11 +1805,96 @@ function update() {
     }
 }
 
-// --- RENDER ---
+// --- RENDER (ЧЁТКИЙ ДВУХСЛОЙНЫЙ ВЫВОД) ---
 function draw() {
     ctx.save();
 
-    // СЛОЙ 1: ПИКСЕЛЬНЫЙ МИР
+    // ==========================================
+    // ЭКРАН ПОБЕДЫ: СТРИМ ФАВОРИТА (EVERTON JERSEY)
+    // ==========================================
+    if (gameState === 'VICTORY') {
+        ctx.fillStyle = '#090d16'; ctx.fillRect(0, 0, 640, 448);
+
+        // ВЕРХНЯЯ ШАПКА СТРИМА
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(16, 12, 608, 38);
+        ctx.strokeStyle = '#38bdf8'; ctx.strokeRect(16, 12, 608, 38);
+
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(28, 22, 10, 10);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace';
+        ctx.fillText("В ЭФИРЕ", 44, 31);
+
+        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 13px monospace';
+        ctx.fillText("Стрим Фаворита: СЕГОДНЯ В 19:00 ПО РАСПИСАНИЮ!", 120, 31);
+
+        ctx.fillStyle = '#94a3b8'; ctx.font = '11px monospace';
+        ctx.fillText("👁️ 14,880 зрителей", 480, 31);
+
+        // ЛЕВАЯ ЧАСТЬ: ОКНО С КАМЕРОЙ ФАВОРИТА
+        ctx.fillStyle = '#000'; ctx.fillRect(16, 58, 380, 320);
+        ctx.strokeStyle = '#003399'; ctx.lineWidth = 3;
+        ctx.strokeRect(16, 58, 380, 320);
+
+        // Стримерский фон (Неоновая подсветка)
+        const bgGrad = ctx.createLinearGradient(16, 58, 396, 378);
+        bgGrad.addColorStop(0, '#0c1a30');
+        bgGrad.addColorStop(1, '#001a4d');
+        ctx.fillStyle = bgGrad; ctx.fillRect(19, 61, 374, 314);
+
+        // Отрисовка пиксельного Фаворита в футболке Эвертона (scale 4x для стрим-камеры)
+        ctx.save();
+        ctx.translate(150, 150);
+        ctx.scale(3.2, 3.2);
+        draw16BitFavoritStreamer(0, 0);
+        ctx.restore();
+
+        // Плашка названия стрима
+        ctx.fillStyle = 'rgba(0, 40, 117, 0.9)';
+        ctx.fillRect(24, 330, 364, 38);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace';
+        ctx.fillText("⚽ ФК ЭВЕРТОН — ТОЛЬКО ПОБЕДА! 💙", 36, 354);
+
+        // ПРАВАЯ ЧАСТЬ: БЕГУЩИЙ ЧАТ СТРИМА
+        ctx.fillStyle = '#0b1120'; ctx.fillRect(404, 58, 220, 320);
+        ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+        ctx.strokeRect(404, 58, 220, 320);
+
+        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 12px monospace';
+        ctx.fillText("💬 ЧАТ СТРИМА", 416, 78);
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(412, 86, 204, 2);
+
+        // Сообщения чата
+        for (let i = 0; i < streamChat.length; i++) {
+            const msg = streamChat[i];
+            const my = 110 + i * 36;
+            ctx.fillStyle = msg.color; ctx.font = 'bold 10px monospace';
+            ctx.fillText(msg.user, 414, my);
+            ctx.fillStyle = '#f8fafc'; ctx.font = '10px monospace';
+            ctx.fillText(msg.text, 414, my + 14);
+        }
+
+        // Частицы реакций на стриме
+        streamReactionParticles.forEach(rp => {
+            ctx.font = '16px monospace';
+            ctx.fillText(rp.char, rp.x, rp.y);
+        });
+
+        // НИЖНЯЯ ПАНЕЛЬ С КНОПКАМИ
+        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 14px monospace';
+        ctx.fillText("★ ПОБЕДА! ПИНГВИН СПАС РАСПИСАНИЕ ★", 30, 415);
+
+        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 12px monospace';
+        ctx.fillText("[❤️ КЛИКНИ / НАЖМИ УДАР] — ОТПРАВИТЬ СЕРДЕЧКО НА СТРИМ", 30, 435);
+
+        ctx.fillStyle = '#4ade80'; ctx.font = 'bold 12px monospace';
+        ctx.fillText("[🔁 R] — СЫГРАТЬ СНОВА", 450, 425);
+
+        ctx.restore();
+        return;
+    }
+
+    // ==========================================
+    // СЛОЙ 1: ПИКСЕЛЬНЫЙ МИР (ОБЫЧНЫЙ ГЕЙМПЛЕЙ)
+    // ==========================================
     ctx.save();
     ctx.scale(2, 2);
 
@@ -1825,191 +2027,4 @@ function draw() {
     projectiles.forEach(pr => {
         ctx.fillStyle = pr.color;
         ctx.beginPath(); ctx.arc(pr.x, pr.y, 4, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#fff'; ctx.font = 'bold 6px monospace';
-        ctx.fillText(pr.reflected ? "★" : pr.btn, pr.x - 2, pr.y + 2);
-    });
-
-    particles.forEach(p => { ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 2, 2); });
-
-    if (player.hp > 0 && !(player.invul > 0 && player.invul % 4 > 2)) {
-        draw16BitPenguin(player);
-    }
-
-    ctx.restore();
-
-    // СЛОЙ 2: ЧЁТКИЙ UI И ТЕКСТ
-    if (currentRoom === 'THRONE' && boss.active && boss.hp > 0) {
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 12px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(boss.isRage ? "ГЕНЕРАЛ 1:6 [RAGE MODE - RROD]" : "ГЕНЕРАЛ 1:6 (КОЛЯНЧИК)", 320, 14);
-        ctx.textAlign = 'left';
-    }
-
-    if (currentRoom === 'CATACOMBS' && gateOpened) {
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = 'bold 12px monospace';
-        ctx.fillText("▲ ВХОД В ТРОННЫЙ ЗАЛ ▲", 240, 36);
-    }
-
-    floatingTexts.forEach(ft => {
-        ctx.font = 'bold 14px monospace';
-        ctx.fillStyle = '#000';
-        ctx.fillText(ft.text, ft.x * 2 + 1, ft.y * 2 + 1);
-        ctx.fillStyle = ft.color;
-        ctx.fillText(ft.text, ft.x * 2, ft.y * 2);
-    });
-
-    for (let i = 0; i < player.maxHp / 2; i++) {
-        const hVal = player.hp - i * 2;
-        const hx = 40 + i * 22;
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(hx, 12, 18, 16);
-        if (hVal >= 2) {
-            ctx.fillStyle = '#ef4444'; ctx.fillRect(hx + 2, 14, 14, 12);
-            ctx.fillStyle = '#fca5a5'; ctx.fillRect(hx + 4, 16, 4, 4);
-        } else if (hVal === 1) {
-            ctx.fillStyle = '#ef4444'; ctx.fillRect(hx + 2, 14, 7, 12);
-        }
-    }
-
-    const isHypeMax = player.hype === player.maxHype;
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(40, 34, 100, 10);
-    ctx.fillStyle = isHypeMax ? ((Math.floor(Date.now() / 150) % 2 === 0) ? '#fbbf24' : '#f43f5e') : '#a855f7';
-    ctx.fillRect(40, 34, (player.hype / player.maxHype) * 100, 10);
-    ctx.strokeStyle = '#475569'; ctx.strokeRect(40, 34, 100, 10);
-
-    if (isHypeMax) {
-        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 11px monospace';
-        ctx.fillText("ULT READY!", 148, 43);
-    }
-
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(460, 12, 70, 24);
-    ctx.strokeStyle = '#475569'; ctx.strokeRect(460, 12, 70, 24);
-    ctx.fillStyle = player.weapon === 'golden_fish' ? '#fbbf24' : '#38bdf8';
-    ctx.font = 'bold 12px monospace';
-    ctx.fillText(player.weapon === 'golden_fish' ? "ЗОЛОТО" : "МЕЧ", 474, 28);
-
-    ctx.fillStyle = '#fde68a'; ctx.font = 'bold 13px monospace';
-    ctx.fillText(`СВИТКИ: ${player.schedules}/${player.totalSchedules}`, 540, 28);
-
-    if (dialog.timer > 0) {
-        const dy = 320;
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.97)';
-        ctx.fillRect(32, dy, 576, 104);
-        ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
-        ctx.strokeRect(32, dy, 576, 104);
-
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(44, dy + 12, 64, 64);
-        ctx.strokeStyle = '#64748b'; ctx.strokeRect(44, dy + 12, 64, 64);
-
-        if (dialog.portrait === 'penguin') {
-            ctx.fillStyle = '#1e293b'; ctx.fillRect(52, dy + 20, 48, 48);
-            ctx.fillStyle = '#cbd5e1'; ctx.fillRect(60, dy + 40, 32, 28);
-            ctx.fillStyle = player.armor === 'armored_scarf' ? '#94a3b8' : '#e11d48';
-            ctx.fillRect(56, dy + 36, 40, 8);
-            ctx.fillStyle = '#fbbf24'; ctx.fillRect(68, dy + 40, 16, 10);
-            ctx.fillStyle = '#000'; ctx.fillRect(60, dy + 28, 8, 8); ctx.fillRect(84, dy + 28, 8, 8);
-        } else {
-            ctx.fillStyle = '#1e3a29'; ctx.fillRect(52, dy + 20, 48, 20);
-            ctx.fillStyle = '#fbbf24'; ctx.fillRect(70, dy + 24, 12, 8);
-            ctx.fillStyle = '#fbcfe8'; ctx.fillRect(56, dy + 40, 40, 28);
-        }
-
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = 'bold 15px monospace';
-        ctx.fillText(dialog.speaker, 124, dy + 26);
-
-        ctx.fillStyle = '#f8fafc';
-        ctx.font = '13px monospace';
-        const words = dialog.text.split(' ');
-        let line = '', lineY = dy + 50;
-        for (let n = 0; n < words.length; n++) {
-            const testLine = line + words[n] + ' ';
-            if (testLine.length > 46) {
-                ctx.fillText(line, 124, lineY);
-                line = words[n] + ' ';
-                lineY += 18;
-            } else {
-                line = testLine;
-            }
-        }
-        ctx.fillText(line, 124, lineY);
-    }
-
-    if (inventoryOpen) {
-        ctx.fillStyle = 'rgba(11, 15, 25, 0.96)';
-        ctx.fillRect(60, 50, 520, 348);
-        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3;
-        ctx.strokeRect(60, 50, 520, 348);
-
-        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 18px monospace';
-        ctx.fillText("=== МЕНЮ ЭКИПИРОВКИ ===", 190, 85);
-
-        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 14px monospace';
-        ctx.fillText("[ОРУЖИЕ] (ПКМ / ⚔️):", 90, 130);
-        ctx.fillStyle = '#fff'; ctx.font = '13px monospace';
-        if (player.hasGoldenFish) {
-            ctx.fillText(player.weapon === 'golden_fish' ? "► ЗОЛОТАЯ РЫБА (Урон: x2 + Волна)" : "  Синяя рыба-меч (Урон: 1)", 90, 155);
-        } else {
-            ctx.fillText("► Синяя рыба-меч (Урон: 1)", 90, 155);
-            ctx.fillStyle = '#64748b'; ctx.fillText("  [?] Найдите золотой сундук!", 90, 175);
-        }
-
-        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 14px monospace';
-        ctx.fillText("[ДАЛЬНЯЯ МАГИЯ] (СКМ / ❄️):", 90, 215);
-        ctx.fillStyle = '#fff'; ctx.font = '13px monospace';
-        ctx.fillText("► Морозный Сюрикен (Заморозка врагов 1.5с 🧊)", 90, 240);
-
-        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 14px monospace';
-        ctx.fillText("[БРОНЯ] (ЛКМ / 🛡️):", 90, 280);
-        ctx.fillStyle = '#fff'; ctx.font = '13px monospace';
-        if (player.hasArmoredScarf) {
-            ctx.fillText("► Бронированный стальной шарф (+2 HP & Защита)", 90, 305);
-        } else {
-            ctx.fillText("► Обычный красный шарф", 90, 305);
-        }
-
-        ctx.fillStyle = '#9ca3af'; ctx.font = '12px monospace';
-        ctx.fillText("Нажмите [ИНВЕНТАРЬ] или [TAB], чтобы закрыть", 170, 370);
-    }
-
-    if (transition.active) {
-        ctx.fillStyle = `rgba(0, 0, 0, ${transition.alpha})`;
-        ctx.fillRect(0, 0, 640, 448);
-    }
-
-    if (gameState === 'VICTORY') {
-        ctx.fillStyle = 'rgba(10, 15, 26, 0.92)';
-        ctx.fillRect(0, 0, 640, 448);
-        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 20px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText("★ ПОБЕДА! РАСПИСАНИЕ НАЙДЕНО ★", 320, 180);
-        ctx.fillStyle = '#4ade80'; ctx.font = '15px monospace';
-        ctx.fillText("Стрим Фаворита: СЕГОДНЯ В 19:00 ПО МСК!", 320, 230);
-        ctx.fillStyle = '#9ca3af'; ctx.font = '13px monospace';
-        ctx.fillText("Нажмите [🔁 R], чтобы сыграть снова", 320, 280);
-        ctx.textAlign = 'left';
-    } else if (gameState === 'GAMEOVER') {
-        ctx.fillStyle = 'rgba(20, 5, 8, 0.94)';
-        ctx.fillRect(0, 0, 640, 448);
-        ctx.fillStyle = '#ef4444'; ctx.font = 'bold 24px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText("ВЫ ПОГИБЛИ", 320, 190);
-        ctx.fillStyle = '#f59e0b'; ctx.font = '14px monospace';
-        ctx.fillText("Нажмите [🔁 R], чтобы начать заново", 320, 250);
-        ctx.textAlign = 'left';
-    }
-
-    ctx.restore();
-}
-
-function loop() {
-    update();
-    draw();
-    requestAnimationFrame(loop);
-}
-
-loop();
-</script>
-</body>
-</html>
+        ctx.fill
