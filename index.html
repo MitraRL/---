@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>16-BIT: Пингвин и Расписание</title>
+    <title>16-BIT: Пингвин и Расписание (SNES Deluxe Edition)</title>
     
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -25,8 +25,8 @@
             padding: 0;
         }
         body {
-            background: #030712;
-            color: #e2e8f0;
+            background: #020408;
+            color: #f1f5f9;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             width: 100vw;
             height: 100vh;
@@ -37,8 +37,7 @@
             align-items: center;
         }
 
-        /* КОНТЕЙНЕР ИГРЫ */
-        #game-container {
+        #game-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -48,104 +47,121 @@
             height: 100%;
         }
 
-        /* ЭКРАН */
         #screen-box {
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #0f172a;
+            background: #000;
         }
 
         canvas {
             display: block;
-            background: #0f172a;
+            background: #0b0f19;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
             touch-action: none;
         }
 
-        /* ВЕРХНЕЕ МЕНЮ */
+        /* Верхняя панель кнопок */
         #top-bar {
             position: absolute;
-            top: 6px;
-            right: 6px;
+            top: 8px;
+            right: 8px;
             display: flex;
             gap: 6px;
             z-index: 50;
         }
         .btn-top {
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid #475569;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid #64748b;
             color: #fff;
-            padding: 6px 10px;
+            padding: 5px 10px;
             border-radius: 6px;
             font-size: 11px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.8);
         }
         .btn-top:active { background: #38bdf8; color: #000; }
 
-        /* --- РЕЖИМ ПК --- */
-        body.mode-pc #game-container {
-            width: auto;
-            height: auto;
-        }
-        body.mode-pc #screen-box {
-            border: 2px solid #334155;
-            border-radius: 8px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 20px rgba(56, 189, 248, 0.2);
-            padding: 4px;
-            background: #1e293b;
-        }
-        body.mode-pc canvas {
-            width: 640px;
-            height: 448px;
-            max-width: 95vw;
-            max-height: 82vh;
-        }
-        body.mode-pc #gamepad-section {
-            display: none !important;
-        }
-        body.mode-pc .pc-help {
-            display: flex;
-        }
-
-        /* --- РЕЖИМ ТЕЛЕФОНА --- */
-        body.mode-mobile #game-container {
-            width: 100vw;
-            height: 100vh;
-            max-width: 480px;
-            justify-content: space-between;
-            background: #090d16;
-        }
-        body.mode-mobile #screen-box {
-            width: 100%;
-            flex: 1 1 54%;
-            border-bottom: 2px solid #1e293b;
-        }
-        body.mode-mobile canvas {
-            width: 100%;
-            height: auto;
-            max-height: 100%;
-            aspect-ratio: 640 / 448;
-        }
-        body.mode-mobile #gamepad-section {
-            width: 100%;
-            flex: 1 1 46%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            background: #0b0f19;
-            touch-action: none;
-        }
-        body.mode-mobile .pc-help {
-            display: none !important;
+        /* --- АДАПТАЦИЯ ДЛЯ ПК --- */
+        @media (min-width: 768px) and (min-height: 500px) {
+            #game-wrapper {
+                width: auto;
+                height: auto;
+                padding: 10px;
+                background: #0f172a;
+                border: 3px solid #334155;
+                border-radius: 12px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 30px rgba(56, 189, 248, 0.2);
+            }
+            #screen-box {
+                border-radius: 6px;
+                overflow: hidden;
+            }
+            canvas {
+                width: 640px;
+                height: 448px;
+                max-width: 95vw;
+                max-height: 82vh;
+            }
+            #gamepad-section {
+                display: none !important;
+            }
+            .pc-help {
+                display: flex;
+            }
         }
 
-        /* СЕНСОРНЫЙ ПУЛЬТ */
+        /* --- АДАПТАЦИЯ ДЛЯ ТЕЛЕФОНА --- */
+        @media (max-width: 767px), (max-height: 499px) {
+            #game-wrapper {
+                width: 100vw;
+                height: 100vh;
+                max-width: 480px;
+                justify-content: space-between;
+                background: #090d16;
+            }
+            #screen-box {
+                width: 100%;
+                flex: 1 1 54%;
+                border-bottom: 2px solid #1e293b;
+            }
+            canvas {
+                width: 100%;
+                height: auto;
+                max-height: 100%;
+                aspect-ratio: 640 / 448;
+            }
+            #gamepad-section {
+                width: 100%;
+                flex: 1 1 46%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 12px;
+                background: #0b0f19;
+                touch-action: none;
+            }
+            .pc-help {
+                display: none !important;
+            }
+        }
+
+        /* РУЧНЫЕ РЕЖИМЫ */
+        body.force-pc #gamepad-section { display: none !important; }
+        body.force-pc #game-wrapper { width: auto; height: auto; padding: 10px; background: #0f172a; border-radius: 12px; }
+        body.force-pc canvas { width: 640px; height: 448px; }
+        body.force-pc .pc-help { display: flex !important; }
+
+        body.force-mobile #game-wrapper { width: 100vw; height: 100vh; max-width: 480px; justify-content: space-between; background: #090d16; border: none; padding: 0; }
+        body.force-mobile #screen-box { width: 100%; flex: 1 1 54%; border-bottom: 2px solid #1e293b; }
+        body.force-mobile canvas { width: 100%; height: auto; aspect-ratio: 640 / 448; }
+        body.force-mobile #gamepad-section { width: 100%; flex: 1 1 46%; display: flex !important; }
+        body.force-mobile .pc-help { display: none !important; }
+
+        /* КНОПКИ СЕНСОРНОГО ГЕЙМПАДА */
         #joystick-area {
             flex: 1 1 45%;
             height: 100%;
@@ -155,31 +171,33 @@
             touch-action: none;
         }
         #joystick-base {
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle, #1e293b, #0f172a);
-            border: 2px solid #38bdf8;
+            width: 126px;
+            height: 126px;
+            background: radial-gradient(circle, #1e293b, #090d16);
+            border: 3px solid #38bdf8;
             border-radius: 50%;
             position: relative;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
         }
         #joystick-stick {
-            width: 46px;
-            height: 46px;
+            width: 50px;
+            height: 50px;
             background: radial-gradient(circle, #38bdf8, #0284c7);
             border: 2px solid #fff;
             border-radius: 50%;
             position: absolute;
-            top: 37px;
-            left: 37px;
+            top: 38px;
+            left: 38px;
             pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
         }
 
         #actions-area {
             flex: 1 1 55%;
             height: 100%;
             display: grid;
-            grid-template-columns: repeat(3, 56px);
-            grid-template-rows: repeat(2, 56px);
+            grid-template-columns: repeat(3, 58px);
+            grid-template-rows: repeat(2, 58px);
             gap: 8px;
             justify-content: center;
             align-content: center;
@@ -188,24 +206,24 @@
             touch-action: none;
         }
         .touch-btn {
-            width: 56px;
-            height: 56px;
+            width: 58px;
+            height: 58px;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             font-weight: bold;
-            font-size: 19px;
+            font-size: 20px;
             color: #fff;
             border: 2px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.7);
             touch-action: none;
             cursor: pointer;
         }
         .touch-btn:active {
             transform: scale(0.9);
-            filter: brightness(1.3);
+            filter: brightness(1.35);
         }
         .btn-label {
             font-size: 8px;
@@ -213,11 +231,11 @@
             margin-top: -2px;
         }
 
-        .btn-atk { background: #d97706; border-color: #fbbf24; grid-column: 2; grid-row: 2; width: 64px; height: 64px; font-size: 24px; }
-        .btn-def { background: #7c3aed; border-color: #a78bfa; grid-column: 1; grid-row: 2; }
-        .btn-ice { background: #0284c7; border-color: #7dd3fc; grid-column: 2; grid-row: 1; }
-        .btn-dash { background: #059669; border-color: #34d399; grid-column: 3; grid-row: 2; }
-        .btn-ult { background: #be123c; border-color: #fda4af; grid-column: 3; grid-row: 1; }
+        .btn-atk { background: radial-gradient(circle, #f59e0b, #b45309); border-color: #fbbf24; grid-column: 2; grid-row: 2; width: 66px; height: 66px; font-size: 24px; }
+        .btn-def { background: radial-gradient(circle, #8b5cf6, #5b21b6); border-color: #a78bfa; grid-column: 1; grid-row: 2; }
+        .btn-ice { background: radial-gradient(circle, #38bdf8, #0369a1); border-color: #7dd3fc; grid-column: 2; grid-row: 1; }
+        .btn-dash { background: radial-gradient(circle, #10b981, #047857); border-color: #34d399; grid-column: 3; grid-row: 2; }
+        .btn-ult { background: radial-gradient(circle, #f43f5e, #be123c); border-color: #fda4af; grid-column: 3; grid-row: 1; }
 
         .pc-help {
             margin-top: 10px;
@@ -238,21 +256,21 @@
         }
     </style>
 </head>
-<body class="mode-pc">
+<body>
 
-<div id="game-container">
+<div id="game-wrapper">
     <div id="screen-box">
         <canvas id="game" width="640" height="448"></canvas>
 
         <div id="top-bar">
-            <button class="btn-top" id="btn-mode-toggle">🖥️ ПК / 📱 ТЕЛ</button>
+            <button class="btn-top" id="btn-mode-toggle">🎮 РЕЖИМ</button>
             <button class="btn-top" id="btn-inv">🎒 ИНВЕНТАРЬ</button>
             <button class="btn-top" id="btn-swap">🔄 СМЕНА</button>
             <button class="btn-top" id="btn-restart">🔁 R</button>
         </div>
     </div>
 
-    <!-- ГЕЙМПАД ДЛЯ ТЕЛЕФОНА -->
+    <!-- СЕНСОРНЫЙ ПУЛЬТ -->
     <div id="gamepad-section">
         <div id="joystick-area">
             <div id="joystick-base">
@@ -281,20 +299,16 @@
 </div>
 
 <script>
-// --- ПЕРЕКЛЮЧЕНИЕ РЕЖИМА УПРАВЛЕНИЯ ---
-function setMode(mode) {
-    document.body.className = (mode === 'PC') ? 'mode-pc' : 'mode-mobile';
-}
-
-function autoDetect() {
-    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 680;
-    setMode(isMobile ? 'MOBILE' : 'PC');
-}
-autoDetect();
-
+// --- ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА ---
 document.getElementById('btn-mode-toggle').addEventListener('click', () => {
-    if (document.body.classList.contains('mode-pc')) setMode('MOBILE');
-    else setMode('PC');
+    if (document.body.classList.contains('force-mobile')) {
+        document.body.className = 'force-pc';
+    } else if (document.body.classList.contains('force-pc')) {
+        document.body.className = 'force-mobile';
+    } else {
+        const isMobileScreen = window.innerWidth <= 767;
+        document.body.className = isMobileScreen ? 'force-pc' : 'force-mobile';
+    }
 });
 
 // --- 16-BIT AUDIO ENGINE ---
@@ -675,7 +689,7 @@ let spawnTimer = 180;
 const MAX_BAMBOCHI_CATACOMBS = 4;
 const MAX_BAMBOCHI_THRONE = 3;
 
-// ИГРОК
+// ИГРОК (ИСТИННО ЧЁРНЫЙ ПИНГВИН)
 const player = {
     x: 152, y: 160,
     w: 16, h: 18,
@@ -989,9 +1003,9 @@ function spawnSparks(x, y, color, count = 4) {
     }
 }
 
-// --- RENDER HELPERS ---
+// --- РЕНДЕР ДЕТАЛИЗИРОВАННЫХ 16-BIT ОБЪЕКТОВ ---
 function drawShadow(x, y, w, h) {
-    ctx.fillStyle = 'rgba(5, 7, 13, 0.45)';
+    ctx.fillStyle = 'rgba(5, 7, 13, 0.5)';
     ctx.beginPath();
     ctx.ellipse((x + w / 2) | 0, (y + h) | 0, (w / 2.1) | 0, 3, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -1043,15 +1057,16 @@ function draw16BitPotion(d) {
     }
 }
 
+// НАСТОЯЩИЙ ЧЁРНЫЙ ПИНГВИН
 function draw16BitPenguin(p) {
     const px = p.x | 0, py = p.y | 0;
     drawShadow(px, py, p.w, p.h);
 
     if (p.holdTimer > 0) {
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(px + 2, py + 4, 12, 14);
-        ctx.fillStyle = '#f8fafc'; ctx.fillRect(px + 4, py + 8, 8, 9);
+        ctx.fillStyle = '#09090b'; ctx.fillRect(px + 2, py + 4, 12, 14); // Черное тело
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(px + 4, py + 8, 8, 9);  // Белое пузико
         ctx.fillStyle = '#f59e0b'; ctx.fillRect(px + 6, py + 8, 4, 3);
-        ctx.fillStyle = '#2563eb'; ctx.fillRect(px + 1, py + 2, 3, 6); ctx.fillRect(px + 12, py + 2, 3, 6);
+        ctx.fillStyle = '#171717'; ctx.fillRect(px + 1, py + 2, 3, 6); ctx.fillRect(px + 12, py + 2, 3, 6);
         if (p.holdingItem === 'golden_fish') {
             ctx.fillStyle = '#fbbf24'; ctx.fillRect(px + 3, py - 10, 10, 6);
             ctx.fillStyle = '#fff'; ctx.fillRect(px + 5, py - 9, 6, 2);
@@ -1063,30 +1078,36 @@ function draw16BitPenguin(p) {
     }
 
     if (p.isSliding) {
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(px, py + 6, 18, 10);
-        ctx.fillStyle = '#f8fafc'; ctx.fillRect(px + 2, py + 10, 14, 5);
-        ctx.fillStyle = '#2563eb'; ctx.fillRect(px + 2, py + 7, 14, 4);
-        ctx.fillStyle = p.armor === 'armored_scarf' ? '#cbd5e1' : '#e11d48';
+        ctx.fillStyle = '#09090b'; ctx.fillRect(px, py + 6, 18, 10);
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(px + 2, py + 10, 14, 5);
+        ctx.fillStyle = '#262626'; ctx.fillRect(px + 2, py + 7, 14, 4);
+        ctx.fillStyle = p.armor === 'armored_scarf' ? '#cbd5e1' : '#dc2626';
         ctx.fillRect(px + (p.facing === 'left' ? 2 : 12), py + 6, 4, 3);
         ctx.fillStyle = '#f59e0b'; ctx.fillRect(px + (p.facing === 'left' ? -2 : 16), py + 8, 4, 3);
         return;
     }
 
     const bounce = p.walkFrame === 1 ? -1 : 0;
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(px + 2, py + bounce, 12, 18);
-    ctx.fillStyle = '#2563eb'; ctx.fillRect(px + 2, py + 1 + bounce, 12, 15);
-    ctx.fillStyle = '#e2e8f0'; ctx.fillRect(px + 4, py + 6 + bounce, 8, 9);
-    ctx.fillStyle = '#f8fafc'; ctx.fillRect(px + 5, py + 6 + bounce, 6, 7);
+    // Глубокое чёрное тело с графитовым контуром
+    ctx.fillStyle = '#09090b'; ctx.fillRect(px + 2, py + bounce, 12, 18);
+    ctx.fillStyle = '#27272a'; ctx.fillRect(px + 3, py + 1 + bounce, 10, 2); // Блик на макушке
 
+    // Белое пузико с объёмной серой тенью
+    ctx.fillStyle = '#e2e8f0'; ctx.fillRect(px + 4, py + 6 + bounce, 8, 9);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(px + 5, py + 6 + bounce, 6, 7);
+
+    // Шарф (Алый или Бронированный стальной)
     if (p.armor === 'armored_scarf') {
-        ctx.fillStyle = '#64748b'; ctx.fillRect(px + 3, py + 5 + bounce, 10, 3);
-        ctx.fillStyle = '#cbd5e1'; ctx.fillRect(px + 4, py + 5 + bounce, 8, 2);
+        ctx.fillStyle = '#475569'; ctx.fillRect(px + 3, py + 5 + bounce, 10, 3);
+        ctx.fillStyle = '#94a3b8'; ctx.fillRect(px + 4, py + 5 + bounce, 8, 2);
+        ctx.fillStyle = '#f8fafc'; ctx.fillRect(px + 6, py + 5 + bounce, 2, 1);
     } else {
-        ctx.fillStyle = '#be123c'; ctx.fillRect(px + 3, py + 5 + bounce, 10, 3);
-        ctx.fillStyle = '#e11d48'; ctx.fillRect(px + 4, py + 5 + bounce, 8, 2);
+        ctx.fillStyle = '#991b1b'; ctx.fillRect(px + 3, py + 5 + bounce, 10, 3);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(px + 4, py + 5 + bounce, 8, 2);
     }
 
-    ctx.fillStyle = '#0f172a';
+    // Выразительные глаза
+    ctx.fillStyle = '#000';
     if (p.facing === 'left') {
         ctx.fillRect(px + 3, py + 3 + bounce, 2, 3); ctx.fillStyle = '#fff'; ctx.fillRect(px + 3, py + 3 + bounce, 1, 1);
     } else if (p.facing === 'right') {
@@ -1096,7 +1117,9 @@ function draw16BitPenguin(p) {
         ctx.fillStyle = '#fff'; ctx.fillRect(px + 4, py + 3 + bounce, 1, 1); ctx.fillRect(px + 10, py + 3 + bounce, 1, 1);
     }
 
+    // Жёлтый клюв и лапки
     ctx.fillStyle = '#f59e0b'; ctx.fillRect(px + 6, py + 5 + bounce, 4, 3);
+    ctx.fillStyle = '#fde047'; ctx.fillRect(px + 6, py + 5 + bounce, 4, 1); // Блик клюва
     ctx.fillStyle = '#ea580c'; ctx.fillRect(px + 3, py + 16, 3, 2); ctx.fillRect(px + 10, py + 16, 3, 2);
 
     if (p.isShielding) {
@@ -1136,9 +1159,9 @@ function draw16BitBoss(b) {
     drawShadow(bx, by, b.w, b.h);
     if (b.invul > 0 && b.invul % 4 > 2) return;
 
-    ctx.fillStyle = b.isRage ? '#b91c1c' : '#1e293b';
+    ctx.fillStyle = b.isRage ? '#991b1b' : '#0f172a';
     ctx.fillRect(bx + 2, by, 24, 30); ctx.fillRect(bx, by + 4, 28, 24);
-    ctx.fillStyle = b.isRage ? '#dc2626' : '#14532d';
+    ctx.fillStyle = b.isRage ? '#dc2626' : '#15803d';
     ctx.fillRect(bx + 4, by + 1, 20, 7);
     ctx.fillStyle = '#fbbf24'; ctx.fillRect(bx + 11, by + 3, 6, 4);
 
@@ -1147,11 +1170,11 @@ function draw16BitBoss(b) {
     ctx.fillStyle = '#111'; ctx.fillRect(bx + 8, by + 12, 3, 2); ctx.fillRect(bx + 17, by + 12, 3, 2);
     ctx.fillStyle = '#881337'; ctx.fillRect(bx + 12, by + 16, 4, 1);
 
-    ctx.fillStyle = b.isRage ? '#b91c1c' : '#166534';
+    ctx.fillStyle = b.isRage ? '#991b1b' : '#166534';
     ctx.fillRect(bx + 4, by + 19, 20, 11);
     ctx.fillStyle = '#fbbf24'; ctx.fillRect(bx + 2, by + 19, 4, 4); ctx.fillRect(bx + 22, by + 19, 4, 4);
 
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(bx + 5, by + 23, 18, 9);
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(bx + 5, by + 23, 18, 9);
     ctx.fillStyle = b.isRage ? '#ef4444' : '#22c55e'; ctx.fillRect(bx + 13, by + 24, 3, 3);
     ctx.fillStyle = '#38bdf8'; ctx.fillRect(bx + 18, by + 25, 2, 2);
 
@@ -1168,7 +1191,7 @@ function draw16BitMinion(m) {
     if (m.invul > 0 && m.invul % 4 > 2) return;
 
     ctx.fillStyle = '#4c1d95'; ctx.fillRect(mx + 1, my, 12, 14);
-    ctx.fillStyle = '#9333ea'; ctx.fillRect(mx + 2, my + 2, 10, 10);
+    ctx.fillStyle = '#7c3aed'; ctx.fillRect(mx + 2, my + 2, 10, 10);
     ctx.fillStyle = '#09090b'; ctx.fillRect(mx + 2, my + 5, 10, 3);
     ctx.fillStyle = '#e2e8f0'; ctx.fillRect(mx + 3, my + 5, 2, 1); ctx.fillRect(mx + 8, my + 5, 2, 1);
 
@@ -1180,7 +1203,6 @@ function draw16BitMinion(m) {
     }
 }
 
-// --- ФАВОРИТ В СИНЕЙ ФУТБОЛКЕ ЭВЕРТОНА ---
 function draw16BitFavoritStreamer(x, y) {
     ctx.fillStyle = '#3e2723';
     ctx.fillRect(x + 12, y, 24, 10); ctx.fillRect(x + 8, y + 4, 32, 8);
@@ -1189,7 +1211,7 @@ function draw16BitFavoritStreamer(x, y) {
     ctx.fillStyle = '#b71c1c'; ctx.fillRect(x + 20, y + 24, 8, 3);
     ctx.fillStyle = '#6d4c41'; ctx.fillRect(x + 16, y + 28, 16, 3);
 
-    // Футболка Эвертона (Royal Everton Blue #003399)
+    // Синяя футболка Эвертона (Royal Everton Blue #003399)
     ctx.fillStyle = '#003399'; ctx.fillRect(x + 4, y + 32, 40, 36);
     ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 18, y + 32, 12, 6);
     ctx.fillStyle = '#003399'; ctx.fillRect(x + 22, y + 32, 4, 4);
@@ -1207,7 +1229,7 @@ function draw() {
     // ЭКРАН ПОБЕДЫ: СТРИМ ФАВОРИТА
     // ==========================================
     if (gameState === 'VICTORY') {
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, 640, 448);
+        ctx.fillStyle = '#090d16'; ctx.fillRect(0, 0, 640, 448);
 
         ctx.fillStyle = '#1e293b'; ctx.fillRect(16, 12, 608, 38);
         ctx.strokeStyle = '#38bdf8'; ctx.strokeRect(16, 12, 608, 38);
@@ -1283,39 +1305,39 @@ function draw() {
     }
 
     if (currentRoom === 'CATACOMBS') {
-        // СОЧНЫЙ КАМЕННЫЙ ПОЛ КАТАКОМБ
-        ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 0, 320, 224);
+        // Красивый каменный пол с фасками
+        ctx.fillStyle = '#141b2d'; ctx.fillRect(0, 0, 320, 224);
         for (let y = 24; y < 196; y += 24) {
             for (let x = 16; x < 304; x += 24) {
-                ctx.fillStyle = '#334155'; ctx.fillRect(x, y, 23, 23);
-                ctx.fillStyle = '#475569'; ctx.fillRect(x, y, 23, 1); ctx.fillRect(x, y, 1, 23);
+                ctx.fillStyle = '#222d42'; ctx.fillRect(x, y, 23, 23);
+                ctx.fillStyle = '#334155'; ctx.fillRect(x, y, 23, 1); ctx.fillRect(x, y, 1, 23);
                 ctx.fillStyle = '#0f172a'; ctx.fillRect(x, y + 22, 23, 1); ctx.fillRect(x + 22, y, 1, 23);
             }
         }
-        ctx.fillStyle = '#0f172a';
+        ctx.fillStyle = '#090d16';
         ctx.fillRect(0, 0, 320, 24); ctx.fillRect(0, 196, 320, 28);
         ctx.fillRect(0, 0, 16, 224); ctx.fillRect(304, 0, 16, 224);
-        ctx.strokeStyle = '#475569'; ctx.strokeRect(15, 23, 290, 174);
+        ctx.strokeStyle = '#38bdf8'; ctx.strokeRect(15, 23, 290, 174);
 
         if (gateOpened) {
             ctx.fillStyle = '#0284c7'; ctx.fillRect(136, 4, 48, 20);
             ctx.strokeStyle = '#38bdf8'; ctx.strokeRect(136, 4, 48, 20);
         } else {
-            ctx.fillStyle = '#334155'; ctx.fillRect(136, 4, 48, 20);
-            ctx.strokeStyle = '#64748b'; ctx.strokeRect(136, 4, 48, 20);
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(136, 4, 48, 20);
+            ctx.strokeStyle = '#475569'; ctx.strokeRect(136, 4, 48, 20);
             for (let i = 0; i < 3; i++) {
-                ctx.fillStyle = (player.schedules > i) ? '#38bdf8' : '#1e293b';
+                ctx.fillStyle = (player.schedules > i) ? '#38bdf8' : '#090d16';
                 ctx.fillRect(144 + i * 12, 10, 6, 8);
             }
         }
 
-        // Динамический свет факелов
+        // Факелы
         catacombsTorches.forEach(t => {
-            const rad = ctx.createRadialGradient(t.x + 3, t.y + 3, 2, t.x + 3, t.y + 3, 40);
+            const rad = ctx.createRadialGradient(t.x + 3, t.y + 3, 2, t.x + 3, t.y + 3, 38);
             rad.addColorStop(0, 'rgba(251, 191, 36, 0.28)');
             rad.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = rad;
-            ctx.fillRect(t.x - 40, t.y - 40, 86, 86);
+            ctx.fillRect(t.x - 38, t.y - 38, 80, 80);
 
             ctx.fillStyle = '#64748b'; ctx.fillRect(t.x + 2, t.y + 4, 4, 6);
             const colors = ['#f59e0b', '#ef4444', '#fef08a'];
@@ -1340,15 +1362,16 @@ function draw() {
     }
 
     if (currentRoom === 'THRONE') {
-        // ТРОННЫЙ ЗАЛ С КРАСНЫМ КОВРОМ
-        ctx.fillStyle = '#2e1065'; ctx.fillRect(0, 0, 320, 224);
+        // Королевский Тронный Зал
+        ctx.fillStyle = '#1c122c'; ctx.fillRect(0, 0, 320, 224);
         for (let y = 24; y < 196; y += 24) {
             for (let x = 16; x < 304; x += 24) {
-                ctx.fillStyle = '#3b0764'; ctx.fillRect(x, y, 23, 23);
-                ctx.fillStyle = '#581c87'; ctx.fillRect(x, y, 23, 1); ctx.fillRect(x, y, 1, 23);
+                ctx.fillStyle = '#2b1945'; ctx.fillRect(x, y, 23, 23);
+                ctx.fillStyle = '#4c287a'; ctx.fillRect(x, y, 23, 1); ctx.fillRect(x, y, 1, 23);
             }
         }
-        ctx.fillStyle = '#b91c1c'; ctx.fillRect(130, 24, 60, 172);
+        // Бархатный красный ковер
+        ctx.fillStyle = '#991b1b'; ctx.fillRect(130, 24, 60, 172);
         ctx.fillStyle = '#dc2626'; ctx.fillRect(134, 24, 52, 172);
         ctx.fillStyle = '#fbbf24'; ctx.fillRect(130, 24, 2, 172); ctx.fillRect(188, 24, 2, 172);
 
@@ -1359,7 +1382,7 @@ function draw() {
 
         // Баннеры Xbox
         ctx.fillStyle = '#107c10'; ctx.fillRect(36, 26, 16, 32); ctx.fillRect(268, 26, 16, 32);
-        ctx.fillStyle = '#0f172a';
+        ctx.fillStyle = '#090d16';
         ctx.fillRect(0, 0, 320, 24); ctx.fillRect(0, 196, 320, 28);
         ctx.fillRect(0, 0, 16, 224); ctx.fillRect(304, 0, 16, 224);
         ctx.strokeStyle = '#dc2626'; ctx.strokeRect(15, 23, 290, 174);
@@ -1456,7 +1479,6 @@ function draw() {
         ctx.fillText(ft.text, (ft.x * 2) | 0, (ft.y * 2) | 0);
     });
 
-    // Сердечки
     for (let i = 0; i < player.maxHp / 2; i++) {
         const hVal = player.hp - i * 2;
         const hx = 24 + i * 22;
@@ -1469,7 +1491,6 @@ function draw() {
         }
     }
 
-    // Шкала Хайпа
     const isHypeMax = player.hype === player.maxHype;
     ctx.fillStyle = '#0f172a'; ctx.fillRect(24, 34, 100, 10);
     ctx.fillStyle = isHypeMax ? ((Math.floor(Date.now() / 150) % 2 === 0) ? '#fbbf24' : '#f43f5e') : '#a855f7';
@@ -1481,7 +1502,6 @@ function draw() {
         ctx.fillText("ULT READY!", 132, 43);
     }
 
-    // Оружие и Свитки
     ctx.fillStyle = '#0f172a'; ctx.fillRect(470, 12, 70, 24);
     ctx.strokeStyle = '#475569'; ctx.strokeRect(470, 12, 70, 24);
     ctx.fillStyle = player.weapon === 'golden_fish' ? '#fbbf24' : '#38bdf8';
@@ -1491,7 +1511,6 @@ function draw() {
     ctx.fillStyle = '#fde68a'; ctx.font = 'bold 13px monospace';
     ctx.fillText(`СВИТКИ: ${player.schedules}/${player.totalSchedules}`, 550, 28);
 
-    // Диалоговое окно
     if (dialog.timer > 0) {
         const dy = 320;
         ctx.fillStyle = 'rgba(15, 23, 42, 0.97)';
@@ -1503,14 +1522,14 @@ function draw() {
         ctx.strokeStyle = '#64748b'; ctx.strokeRect(36, dy + 12, 64, 64);
 
         if (dialog.portrait === 'penguin') {
-            ctx.fillStyle = '#2563eb'; ctx.fillRect(44, dy + 20, 48, 48);
-            ctx.fillStyle = '#f8fafc'; ctx.fillRect(52, dy + 40, 32, 28);
-            ctx.fillStyle = player.armor === 'armored_scarf' ? '#cbd5e1' : '#e11d48';
+            ctx.fillStyle = '#09090b'; ctx.fillRect(44, dy + 20, 48, 48); // Чёрный портрет
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(52, dy + 40, 32, 28);
+            ctx.fillStyle = player.armor === 'armored_scarf' ? '#cbd5e1' : '#dc2626';
             ctx.fillRect(48, dy + 36, 40, 8);
             ctx.fillStyle = '#f59e0b'; ctx.fillRect(60, dy + 40, 16, 10);
             ctx.fillStyle = '#000'; ctx.fillRect(52, dy + 28, 8, 8); ctx.fillRect(76, dy + 28, 8, 8);
         } else {
-            ctx.fillStyle = '#14532d'; ctx.fillRect(44, dy + 20, 48, 20);
+            ctx.fillStyle = '#15803d'; ctx.fillRect(44, dy + 20, 48, 20);
             ctx.fillStyle = '#fbbf24'; ctx.fillRect(62, dy + 24, 12, 8);
             ctx.fillStyle = '#fbcfe8'; ctx.fillRect(48, dy + 40, 40, 28);
         }
@@ -1734,381 +1753,4 @@ function update() {
 
         if (touchJoystick.active && (touchJoystick.x !== 0 || touchJoystick.y !== 0)) {
             dx = touchJoystick.x; dy = touchJoystick.y;
-            if (Math.abs(dx) > Math.abs(dy)) {
-                player.facing = dx > 0 ? 'right' : 'left';
-            } else {
-                player.facing = dy > 0 ? 'down' : 'up';
-            }
-        }
-
-        if (dx !== 0 || dy !== 0) {
-            player.walkTimer++;
-            if (player.walkTimer > 7) { player.walkFrame = (player.walkFrame + 1) % 2; player.walkTimer = 0; }
-            if (!touchJoystick.active && dx !== 0 && dy !== 0) { dx *= 0.7071; dy *= 0.7071; }
-            const currentSpeed = player.isShielding ? player.speed * 0.5 : player.speed;
-            player.x += dx * currentSpeed;
-            player.y += dy * currentSpeed;
-        } else {
-            player.walkFrame = 0;
-        }
-    }
-
-    player.x = Math.max(18, Math.min(302 - player.w, player.x));
-    player.y = Math.max(26, Math.min(194 - player.h, player.y));
-
-    if (player.attackTimer > 0) {
-        player.attackTimer--;
-        if (player.attackTimer <= 6) player.isAttacking = false;
-    }
-
-    let slashBox = null;
-    if (player.isAttacking || player.isSliding) {
-        const dist = player.isSliding ? 20 : 18;
-        if (player.facing === 'right') slashBox = { x: player.x + 8, y: player.y - 6, w: dist, h: player.h + 12 };
-        if (player.facing === 'left')  slashBox = { x: player.x - dist + 4, y: player.y - 6, w: dist, h: player.h + 12 };
-        if (player.facing === 'up')    slashBox = { x: player.x - 6, y: player.y - dist + 4, w: player.w + 12, h: dist };
-        if (player.facing === 'down')  slashBox = { x: player.x - 6, y: player.y + 8, w: player.w + 12, h: dist };
-    }
-
-    if (currentRoom === 'CATACOMBS') {
-        chests.forEach(c => {
-            if (!c.opened && slashBox) {
-                if (slashBox.x < c.x + 16 && slashBox.x + slashBox.w > c.x &&
-                    slashBox.y < c.y + 14 && slashBox.y + slashBox.h > c.y) {
-                    c.opened = true;
-                    player.holdingItem = c.item;
-                    player.holdTimer = 60;
-                    playSound('fanfare');
-                    spawnSparks(c.x + 8, c.y + 7, '#fbbf24', 8);
-
-                    if (c.item === 'golden_fish') {
-                        player.hasGoldenFish = true; player.weapon = 'golden_fish';
-                        dialog = { speaker: "НАХОДКА!", text: "Получена ЗОЛОТАЯ РЫБА! Двойной урон и волны при полном HP!", timer: 300, portrait: 'penguin' };
-                    } else if (c.item === 'armored_scarf') {
-                        player.hasArmoredScarf = true; player.armor = 'armored_scarf';
-                        player.maxHp = 8; player.hp = player.maxHp;
-                        dialog = { speaker: "НАХОДКА!", text: "Экипирован БРОНИРОВАННЫЙ ШАРФ! +2 Макс. HP и защита от урона!", timer: 300, portrait: 'penguin' };
-                    }
-                }
-            }
-        });
-
-        scrolls.forEach((s) => {
-            if (!s.collected && Math.hypot(player.x + 8 - (s.x + 6), player.y + 9 - (s.y + 5)) < 16) {
-                s.collected = true;
-                player.schedules++;
-                addHype(35);
-                playSound('item');
-                spawnSparks(s.x + 6, s.y + 5, '#fde68a', 8);
-
-                if (player.schedules === 1) dialog = { speaker: "РАСПИСАНИЕ 1/3", text: "'...Вторник: Фаворит запускает стрим в 19:00...'", timer: 240, portrait: 'penguin' };
-                else if (player.schedules === 2) dialog = { speaker: "РАСПИСАНИЕ 2/3", text: "'...Пятница: Кооп-битва с генералами...'", timer: 240, portrait: 'penguin' };
-                else if (player.schedules === 3) {
-                    gateOpened = true;
-                    screenShake = 10;
-                    playSound('door_unlock');
-                    dialog = { speaker: "ВРАТА ОТКРЫТЫ!", text: "Все 3 свитка собраны! Северные ворота в Тронный Зал распахнулись!", timer: 320, portrait: 'penguin' };
-                }
-            }
-        });
-    }
-
-    // СБОР ЗЕЛИЙ
-    for (let i = drops.length - 1; i >= 0; i--) {
-        const d = drops[i];
-        d.life--;
-        if (Math.hypot(player.x + 8 - (d.x + 4), player.y + 9 - (d.y + 4)) < 14) {
-            playSound('potion');
-            if (d.type === 'potion_hp') {
-                player.hp = Math.min(player.maxHp, player.hp + 2);
-                addFloatingText(player.x, player.y - 8, "+2 HP! ❤️", '#ef4444');
-            } else if (d.type === 'potion_sp') {
-                player.sp = Math.min(player.maxSp, player.sp + 50);
-                addFloatingText(player.x, player.y - 8, "+50 SP! ⚡", '#38bdf8');
-            } else if (d.type === 'star_hype') {
-                addHype(25);
-                addFloatingText(player.x, player.y - 8, "+HYPE! ⭐", '#fbbf24');
-            }
-            drops.splice(i, 1);
-            continue;
-        }
-        if (d.life <= 0) drops.splice(i, 1);
-    }
-
-    // СНАРЯДЫ ИГРОКА
-    for (let i = playerShots.length - 1; i >= 0; i--) {
-        const ps = playerShots[i];
-        ps.x += ps.vx; ps.y += ps.vy;
-        ps.life--; ps.rot += 0.25;
-
-        minions.forEach(m => {
-            if (m.hp > 0 && !m.dead && Math.hypot(ps.x - (m.x + 7), ps.y - (m.y + 7)) < 12) {
-                const dmg = (ps.type === 'golden_wave') ? 3 : 2;
-                m.hp -= dmg; m.invul = 15;
-
-                if (ps.type === 'frost_shuriken') {
-                    m.freezeTimer = 90;
-                    playSound('freeze');
-                    addFloatingText(m.x, m.y - 4, `FROZEN! -${dmg}`, '#38bdf8');
-                } else {
-                    playSound('hit');
-                    addFloatingText(m.x, m.y - 4, `-${dmg}`, '#fbbf24');
-                }
-
-                if (m.hp <= 0 && !m.dead) {
-                    m.dead = true;
-                    tryDropPotion(m.x, m.y);
-                }
-                addHype(12);
-                ps.life = 0;
-            }
-        });
-
-        if (currentRoom === 'THRONE' && boss.active && boss.hp > 0 && boss.invul === 0) {
-            if (ps.x > boss.x && ps.x < boss.x + boss.w && ps.y > boss.y && ps.y < boss.y + boss.h) {
-                const dmg = (ps.type === 'golden_wave') ? 3 : 2;
-                boss.hp -= dmg; boss.invul = 15; boss.hitStun = 10;
-                addHype(15);
-                playSound(ps.type === 'frost_shuriken' ? 'freeze' : 'hit');
-                addFloatingText(boss.x + 8, boss.y - 6, `RANGED -${dmg}!`, '#38bdf8');
-                ps.life = 0;
-
-                if (boss.hp <= 0) {
-                    triggerVictory();
-                    return;
-                }
-            }
-        }
-
-        if (ps.life <= 0 || ps.x < 10 || ps.x > 310 || ps.y < 20 || ps.y > 210) {
-            playerShots.splice(i, 1);
-        }
-    }
-
-    // УЛЬТА
-    for (let i = ultProjectiles.length - 1; i >= 0; i--) {
-        const up = ultProjectiles[i];
-        up.y += up.vy; up.life--;
-
-        if (up.y > 40) {
-            if (Math.random() < 0.15) playSound('coin');
-
-            minions.forEach(m => {
-                if (m.hp > 0 && !m.dead && Math.hypot(up.x - (m.x + 7), up.y - (m.y + 7)) < 16) {
-                    m.hp -= 2; m.invul = 15;
-                    if (m.hp <= 0 && !m.dead) {
-                        m.dead = true;
-                        tryDropPotion(m.x, m.y);
-                    }
-                }
-            });
-
-            if (currentRoom === 'THRONE' && boss.active && boss.hp > 0 && boss.invul === 0) {
-                if (up.x > boss.x && up.x < boss.x + boss.w && up.y > boss.y && up.y < boss.y + boss.h) {
-                    const ultDmg = up.type === 'giant_fish' ? 6 : 2;
-                    boss.hp -= ultDmg; boss.invul = 15; boss.hitStun = 15;
-                    screenShake = 8; playSound('hit');
-                    addFloatingText(boss.x + 8, boss.y - 6, `ULT -${ultDmg}!`, '#f43f5e');
-
-                    if (boss.hp <= 0) {
-                        triggerVictory();
-                        return;
-                    }
-                }
-            }
-        }
-
-        if (up.y > 220 || up.life <= 0) {
-            ultProjectiles.splice(i, 1);
-        }
-    }
-
-    const baseDamage = (player.weapon === 'golden_fish') ? 2 : 1;
-
-    // БАМБОЧИ
-    for (let i = minions.length - 1; i >= 0; i--) {
-        const m = minions[i];
-        if (m.dead || m.hp <= 0) {
-            minions.splice(i, 1);
-            continue;
-        }
-
-        if (m.invul > 0) m.invul--;
-        if (m.freezeTimer > 0) {
-            m.freezeTimer--;
-            continue;
-        }
-
-        m.timer--;
-        if (m.timer <= 0) {
-            m.timer = 50 + Math.random() * 30;
-            const angle = Math.atan2(player.y - m.y, player.x - m.x);
-            m.dirX = Math.cos(angle); m.dirY = Math.sin(angle);
-        }
-        m.x += m.dirX * m.speed; m.y += m.dirY * m.speed;
-
-        if (player.invul === 0 && Math.hypot(player.x + 8 - (m.x + 7), player.y + 9 - (m.y + 7)) < 12) {
-            if (player.isShielding) {
-                playSound('block'); player.sp -= 15;
-                m.x -= m.dirX * 16; m.y -= m.dirY * 16;
-                addFloatingText(player.x, player.y - 6, "BLOCKED!", '#38bdf8');
-            } else {
-                player.hp--; player.invul = player.armor === 'armored_scarf' ? 60 : 45;
-                screenShake = 5; playSound('hit');
-                addFloatingText(player.x, player.y - 6, "-1 HP", '#ef4444');
-            }
-        }
-
-        if (slashBox && m.invul === 0) {
-            if (slashBox.x < m.x + 14 && slashBox.x + slashBox.w > m.x &&
-                slashBox.y < m.y + 14 && slashBox.y + slashBox.h > m.y) {
-                m.hp -= baseDamage; m.invul = 15; addHype(12);
-                playSound('hit');
-                addFloatingText(m.x, m.y - 4, `БАМБОЧ -${baseDamage}`, '#fbbf24');
-                m.x -= m.dirX * 14; m.y -= m.dirY * 14;
-
-                if (m.hp <= 0 && !m.dead) {
-                    m.dead = true;
-                    tryDropPotion(m.x, m.y);
-                }
-            }
-        }
-    }
-
-    // БОСС
-    if (currentRoom === 'THRONE' && boss.active && boss.hp > 0) {
-        if (boss.invul > 0) boss.invul--;
-
-        if (boss.hp <= boss.maxHp / 2 && !boss.isRage) {
-            boss.isRage = true; boss.baseSpeed = 1.0;
-            screenShake = 10; playSound('door_slam');
-            spawnBambochPortal(60, 100); spawnBambochPortal(240, 100);
-            tryDropPotion(160, 120, 'potion_hp');
-            dialog = {
-                speaker: "ГЕНЕРАЛ 1:6",
-                text: "БАМБОЧИ, НА ПОМОЩЬ! КРАСНОЕ КОЛЬЦО СМЕРТИ АКТИВИРОВАНО!",
-                timer: 220, portrait: 'boss'
-            };
-        }
-
-        if (boss.hitStun > 0) {
-            boss.hitStun--;
-        } else {
-            if (boss.state === 'PATROL') {
-                boss.x += boss.baseSpeed * boss.dir;
-                if (boss.x > 260) boss.dir = -1;
-                if (boss.x < 32)  boss.dir = 1;
-                boss.shootTimer--;
-                if (boss.shootTimer <= 0) boss.state = 'SHOOT';
-            } else if (boss.state === 'SHOOT') {
-                const btnTypes = [
-                    { char: 'A', color: '#22c55e' }, { char: 'B', color: '#ef4444' },
-                    { char: 'X', color: '#38bdf8' }, { char: 'Y', color: '#eab308' }
-                ];
-                const btn = btnTypes[Math.floor(Math.random() * btnTypes.length)];
-                const angle = Math.atan2(player.y + 9 - (boss.y + 24), player.x + 8 - (boss.x + 14));
-
-                projectiles.push({
-                    x: boss.x + 14, y: boss.y + 24,
-                    vx: Math.cos(angle) * 2.2, vy: Math.sin(angle) * 2.2,
-                    btn: btn.char, color: btn.color, life: 140, reflected: false
-                });
-
-                boss.state = 'OVERHEAT';
-                boss.overheatTimer = boss.isRage ? 45 : 75;
-            } else if (boss.state === 'OVERHEAT') {
-                boss.overheatTimer--;
-                if (boss.overheatTimer <= 0) {
-                    boss.state = 'PATROL';
-                    boss.shootTimer = boss.isRage ? 40 : 65;
-                }
-            }
-        }
-
-        if (slashBox && boss.invul === 0) {
-            if (slashBox.x < boss.x + boss.w && slashBox.x + slashBox.w > boss.x &&
-                slashBox.y < boss.y + boss.h && slashBox.y + slashBox.h > boss.y) {
-                const totalDmg = player.isSliding ? (baseDamage + 2) : baseDamage;
-                boss.hp -= totalDmg; boss.invul = 20; boss.hitStun = 12;
-                addHype(18); screenShake = 6; playSound('hit');
-                addFloatingText(boss.x + 8, boss.y - 6, `-${totalDmg} CRIT!`, '#fbbf24');
-
-                if (boss.hp <= 0) {
-                    triggerVictory();
-                    return;
-                }
-            }
-        }
-    }
-
-    for (let i = projectiles.length - 1; i >= 0; i--) {
-        const pr = projectiles[i];
-        pr.x += pr.vx; pr.y += pr.vy; pr.life--;
-
-        if (pr.reflected) {
-            if (currentRoom === 'THRONE' && boss.active && boss.hp > 0 && boss.invul === 0) {
-                if (Math.hypot(pr.x - (boss.x + 14), pr.y - (boss.y + 16)) < 16) {
-                    boss.hp -= 3; boss.invul = 20; boss.hitStun = 25;
-                    screenShake = 8; playSound('hit');
-                    addFloatingText(boss.x + 8, boss.y - 6, "PARRY COUNTER -3!", '#38bdf8');
-                    projectiles.splice(i, 1);
-
-                    if (boss.hp <= 0) {
-                        triggerVictory();
-                        return;
-                    }
-                    continue;
-                }
-            }
-        } else {
-            if (player.invul === 0 && Math.hypot(player.x + 8 - pr.x, player.y + 9 - pr.y) < 12) {
-                if (player.isShielding && player.parryWindow > 0) {
-                    pr.reflected = true;
-                    pr.vx = -pr.vx * 1.6; pr.vy = -pr.vy * 1.6;
-                    pr.color = '#38bdf8'; pr.life = 100;
-                    playSound('parry'); screenShake = 6; addHype(30);
-                    addFloatingText(player.x - 4, player.y - 12, "PERFECT PARRY!", '#38bdf8');
-                    continue;
-                } else if (player.isShielding) {
-                    player.sp -= 15; playSound('block');
-                    addFloatingText(player.x, player.y - 6, "BLOCKED", '#0284c7');
-                    projectiles.splice(i, 1);
-                    continue;
-                } else {
-                    player.hp--; player.invul = player.armor === 'armored_scarf' ? 60 : 45;
-                    screenShake = 5; playSound('hit');
-                    addFloatingText(player.x, player.y - 6, "-1 HP", pr.color);
-                    projectiles.splice(i, 1);
-                    continue;
-                }
-            }
-        }
-
-        if (pr.life <= 0 || pr.x < 0 || pr.x > 320 || pr.y < 0 || pr.y > 224) {
-            projectiles.splice(i, 1);
-        }
-    }
-
-    for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx; p.y += p.vy; p.life--;
-        if (p.life <= 0) particles.splice(i, 1);
-    }
-    for (let i = floatingTexts.length - 1; i >= 0; i--) {
-        const ft = floatingTexts[i];
-        ft.y += ft.vy; ft.life--;
-        if (ft.life <= 0) floatingTexts.splice(i, 1);
-    }
-}
-
-function loop() {
-    update();
-    draw();
-    requestAnimationFrame(loop);
-}
-
-// Запуск игрового цикла
-loop();
-</script>
-</body>
-</html>
+            if (Math.
