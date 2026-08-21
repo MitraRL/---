@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>16-BIT: Пингвин и Расписание (Fixed & Polished)</title>
+    <title>16-BIT: Пингвин и Расписание</title>
     
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
-        }
+        try {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            }
+        } catch (e) {}
     </script>
 
     <style>
@@ -23,80 +25,77 @@
             margin: 0;
             padding: 0;
         }
-        body {
+        html, body {
             background: #05070a;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100vw;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
             position: fixed;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #d1d5db;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* --- СТАРТОВОЕ ОКНО ВЫБОРА УПРАВЛЕНИЯ --- */
+        /* --- СТАРТОВОЕ ОКНО ВЫБОРА РЕЖИМА --- */
         #start-modal {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(5, 7, 10, 0.95);
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 7, 10, 0.96);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 9999;
-            padding: 20px;
+            z-index: 99999;
+            padding: 16px;
         }
         .modal-box {
             background: linear-gradient(145deg, #1b2233, #0f1422);
             border: 3px solid #fbbf24;
             border-radius: 12px;
-            padding: 24px;
-            max-width: 440px;
+            padding: 20px;
+            max-width: 400px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 0 35px rgba(251, 191, 36, 0.25);
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
         }
         .modal-title {
             color: #fbbf24;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             font-family: monospace;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
+            margin-bottom: 6px;
         }
         .modal-subtitle {
             color: #94a3b8;
             font-size: 13px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
         .modal-buttons {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
         .btn-select-mode {
             background: #1e293b;
             border: 2px solid #38bdf8;
             color: #fff;
-            padding: 16px;
+            padding: 14px;
             border-radius: 8px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            transition: transform 0.1s ease, background 0.1s ease;
+            gap: 8px;
+            touch-action: manipulation;
         }
-        .btn-select-mode:hover, .btn-select-mode:active {
+        .btn-select-mode:active {
             background: #0284c7;
-            border-color: #fff;
-            transform: scale(0.98);
+            transform: scale(0.97);
         }
-        .btn-select-mode span { font-size: 22px; }
 
         /* --- КОРПУС ИГРЫ --- */
         #console-wrapper {
@@ -105,66 +104,64 @@
             width: 100%;
             height: 100%;
             position: relative;
-            background: linear-gradient(180deg, #111522 0%, #080a10 100%);
+            background: #0b0e14;
         }
 
         #screen-section {
             position: relative;
             width: 100%;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             background: #000;
-            padding: 4px;
+            overflow: hidden;
         }
         canvas {
             display: block;
             background-color: #0b0e14;
-            width: 100%;
-            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
             object-fit: contain;
-            border-radius: 4px;
             touch-action: none;
         }
         .scanlines {
             position: absolute;
-            top: 4px; left: 4px; right: 4px; bottom: 4px;
+            top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
             background-size: 100% 4px;
-            border-radius: 4px;
         }
 
         #top-bar {
             position: absolute;
-            top: 8px;
-            right: 8px;
+            top: 6px;
+            right: 6px;
             display: flex;
-            gap: 8px;
+            gap: 6px;
             z-index: 10;
         }
         .btn-top {
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid #64748b;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid #475569;
             color: #fff;
-            padding: 7px 11px;
-            border-radius: 8px;
-            font-size: 12px;
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 11px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            touch-action: manipulation;
         }
-        .btn-top:active { background: #38bdf8; color: #000; }
 
         /* --- СЕНСОРНЫЙ ГЕЙМПАД --- */
         #gamepad-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 14px;
+            padding: 8px 12px;
             background: #0f1422;
             position: relative;
-            border-top: 1px solid #1e293b;
+            border-top: 2px solid #1e293b;
             touch-action: none;
         }
 
@@ -178,34 +175,32 @@
             touch-action: none;
         }
         #joystick-base {
-            width: 140px;
-            height: 140px;
+            width: 130px;
+            height: 130px;
             background: radial-gradient(circle, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95));
             border: 2px solid #38bdf8;
             border-radius: 50%;
             position: relative;
-            box-shadow: 0 0 18px rgba(56, 189, 248, 0.3);
         }
         #joystick-stick {
-            width: 56px;
-            height: 56px;
+            width: 52px;
+            height: 52px;
             background: radial-gradient(circle, #38bdf8, #0284c7);
             border: 2px solid #fff;
             border-radius: 50%;
             position: absolute;
-            top: 42px;
-            left: 42px;
+            top: 39px;
+            left: 39px;
             pointer-events: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.7);
         }
 
         #actions-touch-area {
             flex: 1 1 55%;
             height: 100%;
             display: grid;
-            grid-template-columns: repeat(3, 62px);
-            grid-template-rows: repeat(2, 62px);
-            gap: 12px;
+            grid-template-columns: repeat(3, 58px);
+            grid-template-rows: repeat(2, 58px);
+            gap: 10px;
             justify-content: center;
             align-content: center;
             justify-items: center;
@@ -213,59 +208,51 @@
             touch-action: none;
         }
         .touch-btn {
-            width: 62px;
-            height: 62px;
+            width: 58px;
+            height: 58px;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             font-weight: bold;
-            font-size: 22px;
+            font-size: 20px;
             color: #fff;
-            border: 2px solid rgba(255, 255, 255, 0.45);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.75);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
             touch-action: none;
             cursor: pointer;
         }
-        .touch-btn:active, .touch-btn.active {
+        .touch-btn:active {
             transform: scale(0.9);
-            filter: brightness(1.35);
+            filter: brightness(1.3);
         }
         .btn-label {
-            font-size: 9px;
-            letter-spacing: 0.5px;
+            font-size: 8px;
             font-weight: 800;
-            margin-top: -1px;
-            text-transform: uppercase;
+            margin-top: -2px;
         }
 
-        .btn-atk { 
-            background: radial-gradient(circle, #f59e0b, #b45309); 
-            border-color: #fbbf24; 
-            grid-column: 2; grid-row: 2; 
-            width: 72px; height: 72px; 
-            font-size: 26px;
-        }
+        .btn-atk { background: radial-gradient(circle, #f59e0b, #b45309); border-color: #fbbf24; grid-column: 2; grid-row: 2; width: 66px; height: 66px; font-size: 24px; }
         .btn-def { background: radial-gradient(circle, #8b5cf6, #5b21b6); border-color: #a78bfa; grid-column: 1; grid-row: 2; }
         .btn-ice { background: radial-gradient(circle, #38bdf8, #0369a1); border-color: #7dd3fc; grid-column: 2; grid-row: 1; }
         .btn-dash { background: radial-gradient(circle, #10b981, #047857); border-color: #34d399; grid-column: 3; grid-row: 2; }
         .btn-ult { background: radial-gradient(circle, #f43f5e, #be123c); border-color: #fda4af; grid-column: 3; grid-row: 1; }
 
         .pc-help {
-            margin-top: 10px;
-            font-size: 12px;
+            margin-top: 8px;
+            font-size: 11px;
             font-family: monospace;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
         .key {
             color: #fbbf24;
             font-weight: bold;
             background: #1e293b;
-            padding: 2px 6px;
+            padding: 2px 5px;
             border-radius: 4px;
             border: 1px solid #475569;
         }
@@ -273,31 +260,28 @@
         /* РЕЖИМ ПК */
         body.mode-pc #gamepad-section { display: none !important; }
         body.mode-pc #console-wrapper {
-            max-width: 840px;
-            max-height: 600px;
+            max-width: 820px;
+            max-height: 580px;
             height: auto;
             border-radius: 12px;
             border: 2px solid #374151;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 35px rgba(56, 189, 248, 0.2);
-            padding: 8px;
+            padding: 6px;
             background: linear-gradient(145deg, #1b202e, #0c0e14);
         }
         body.mode-pc #screen-section {
-            height: 560px;
-            flex: none;
+            height: 540px;
             width: 800px;
-            border-bottom: none;
         }
         body.mode-pc .pc-help { display: flex; }
 
         /* РЕЖИМ ТЕЛЕФОНА */
         body.mode-mobile #console-wrapper {
-            max-width: 540px;
-            max-height: 960px;
+            width: 100%;
             height: 100%;
+            max-width: 500px;
         }
-        body.mode-mobile #screen-section { flex: 1 1 52%; border-bottom: 3px solid #334155; }
-        body.mode-mobile #gamepad-section { flex: 1 1 48%; display: flex; }
+        body.mode-mobile #screen-section { flex: 1 1 54%; }
+        body.mode-mobile #gamepad-section { flex: 1 1 46%; display: flex; }
         body.mode-mobile .pc-help { display: none !important; }
     </style>
 </head>
@@ -307,13 +291,13 @@
 <div id="start-modal">
     <div class="modal-box">
         <div class="modal-title">★ ПИНГВИН И РАСПИСАНИЕ ★</div>
-        <div class="modal-subtitle">Выберите устройство для игры:</div>
+        <div class="modal-subtitle">Выберите платформу для запуска:</div>
         <div class="modal-buttons">
-            <button class="btn-select-mode" id="btn-choose-pc">
-                <span>💻</span> КОМПЬЮТЕР (Мышь + Клавиатура)
+            <button class="btn-select-mode" id="btn-choose-pc" onclick="setControlMode('PC')">
+                💻 КОМПЬЮТЕР (Клавиатура + Мышь)
             </button>
-            <button class="btn-select-mode" id="btn-choose-mobile">
-                <span>📱</span> ТЕЛЕФОН (Большой Геймпад)
+            <button class="btn-select-mode" id="btn-choose-mobile" onclick="setControlMode('MOBILE')">
+                📱 СМАРТФОН (Сенсорный Геймпад)
             </button>
         </div>
     </div>
@@ -333,975 +317,4 @@
     </div>
 
     <div id="gamepad-section">
-        <div id="joystick-touch-area">
-            <div id="joystick-base">
-                <div id="joystick-stick"></div>
-            </div>
-        </div>
-
-        <div id="actions-touch-area">
-            <div class="touch-btn btn-ice" id="btn-ice">
-                ❄️<span class="btn-label">ЛЁД</span>
-            </div>
-            <div class="touch-btn btn-ult" id="btn-ult">
-                ⚡<span class="btn-label">УЛЬТА</span>
-            </div>
-            <div class="touch-btn btn-def" id="btn-def">
-                🛡️<span class="btn-label">ЩИТ</span>
-            </div>
-            <div class="touch-btn btn-atk" id="btn-atk">
-                ⚔️<span class="btn-label">УДАР</span>
-            </div>
-            <div class="touch-btn btn-dash" id="btn-dash">
-                💨<span class="btn-label">ДЭШ</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="pc-help">
-    <div><span class="key">WASD</span> Бег</div>
-    <div><span class="key">ПКМ</span> Удар</div>
-    <div><span class="key">ЛКМ</span> Щит / Парирование</div>
-    <div><span class="key">СКМ / F</span> Сюрикен 🧊</div>
-    <div><span class="key">E</span> Ульта</div>
-    <div><span class="key">SHIFT</span> Дэш</div>
-    <div><span class="key">Q</span> Оружие</div>
-    <div><span class="key">TAB</span> Инвентарь</div>
-</div>
-
-<script>
-// --- 16-BIT AUDIO ENGINE ---
-let actx = null;
-let bgmTimer = null;
-let bgmStep = 0;
-let musicEnabled = true;
-
-function initAudio() {
-    if (!actx) {
-        actx = new (window.AudioContext || window.webkitAudioContext)();
-        startBGM();
-    }
-}
-
-const bassNotes = [110, 110, 130, 110, 146, 110, 130, 123];
-const leadNotes = [220, 0, 261, 293, 329, 293, 261, 0, 329, 392, 440, 392, 329, 293, 261, 246];
-const victoryLead = [329, 392, 523, 659, 783, 659, 523, 392, 440, 554, 659, 880, 783, 659, 523, 659];
-
-function startBGM() {
-    if (bgmTimer) return;
-    bgmTimer = setInterval(() => {
-        if (!musicEnabled || !actx || inventoryOpen || transition.active) return;
-        const t = actx.currentTime;
-
-        if (gameState === 'VICTORY') {
-            const note = victoryLead[bgmStep % victoryLead.length];
-            const vOsc = actx.createOscillator();
-            const vGain = actx.createGain();
-            vOsc.type = 'triangle';
-            vOsc.frequency.setValueAtTime(note, t);
-            vGain.gain.setValueAtTime(0.05, t);
-            vGain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
-            vOsc.connect(vGain); vGain.connect(actx.destination);
-            vOsc.start(t); vOsc.stop(t + 0.16);
-            bgmStep++;
-            return;
-        }
-
-        const bFreq = bassNotes[bgmStep % bassNotes.length];
-        const bOsc = actx.createOscillator();
-        const bGain = actx.createGain();
-        bOsc.type = 'sawtooth';
-        bOsc.frequency.setValueAtTime((currentRoom === 'THRONE' ? bFreq * 1.2 : bFreq) / 2, t);
-        bGain.gain.setValueAtTime(0.05, t);
-        bGain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-        bOsc.connect(bGain); bGain.connect(actx.destination);
-        bOsc.start(t); bOsc.stop(t + 0.18);
-
-        const lFreq = leadNotes[bgmStep % leadNotes.length];
-        if (lFreq > 0) {
-            const lOsc = actx.createOscillator();
-            const lGain = actx.createGain();
-            lOsc.type = 'square';
-            lOsc.frequency.setValueAtTime(currentRoom === 'THRONE' ? lFreq * 1.2 : lFreq, t);
-            lGain.gain.setValueAtTime(0.025, t);
-            lGain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-            lOsc.connect(lGain); lGain.connect(actx.destination);
-            lOsc.start(t); lOsc.stop(t + 0.15);
-        }
-
-        if (bgmStep % 2 === 0) {
-            const nOsc = actx.createOscillator();
-            const nGain = actx.createGain();
-            nOsc.type = 'triangle';
-            nOsc.frequency.setValueAtTime(600, t);
-            nGain.gain.setValueAtTime(0.02, t);
-            nGain.linearRampToValueAtTime(0, t + 0.04);
-            nOsc.connect(nGain); nGain.connect(actx.destination);
-            nOsc.start(t); nOsc.stop(t + 0.04);
-        }
-        bgmStep++;
-    }, 150);
-}
-
-function playSound(type) {
-    if (!actx) return;
-    const t = actx.currentTime;
-
-    try {
-        if (type === 'slash') {
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(360, t);
-            osc.frequency.exponentialRampToValueAtTime(70, t + 0.1);
-            gain.gain.setValueAtTime(0.3, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.1);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.1);
-        } else if (type === 'frost_shuriken') {
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(800, t);
-            osc.frequency.exponentialRampToValueAtTime(1600, t + 0.15);
-            gain.gain.setValueAtTime(0.25, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.15);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.15);
-        } else if (type === 'freeze') {
-            [1046, 1318, 1567].forEach((f, i) => {
-                const osc = actx.createOscillator(); const gain = actx.createGain();
-                osc.type = 'sine'; osc.frequency.setValueAtTime(f, t + i * 0.04);
-                gain.gain.setValueAtTime(0.2, t + i * 0.04);
-                gain.gain.linearRampToValueAtTime(0.01, t + (i + 1) * 0.06);
-                osc.connect(gain); gain.connect(actx.destination);
-                osc.start(t + i * 0.04); osc.stop(t + (i + 1) * 0.06);
-            });
-        } else if (type === 'parry') {
-            const osc1 = actx.createOscillator(); const gain1 = actx.createGain();
-            const osc2 = actx.createOscillator(); const gain2 = actx.createGain();
-            osc1.type = 'square'; osc1.frequency.setValueAtTime(987, t);
-            osc2.type = 'triangle'; osc2.frequency.setValueAtTime(1975, t);
-            gain1.gain.setValueAtTime(0.35, t); gain1.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
-            gain2.gain.setValueAtTime(0.25, t); gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.35);
-            osc1.connect(gain1); gain1.connect(actx.destination);
-            osc2.connect(gain2); gain2.connect(actx.destination);
-            osc1.start(t); osc1.stop(t + 0.25);
-            osc2.start(t); osc2.stop(t + 0.35);
-        } else if (type === 'door_unlock') {
-            [523, 587, 659, 698, 783, 880, 987, 1046].forEach((f, i) => {
-                const osc = actx.createOscillator(); const gain = actx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(f, t + i * 0.07);
-                gain.gain.setValueAtTime(0.25, t + i * 0.07);
-                gain.gain.linearRampToValueAtTime(0.01, t + (i + 1) * 0.07);
-                osc.connect(gain); gain.connect(actx.destination);
-                osc.start(t + i * 0.07); osc.stop(t + (i + 1) * 0.07);
-            });
-        } else if (type === 'door_slam') {
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, t);
-            osc.frequency.linearRampToValueAtTime(40, t + 0.3);
-            gain.gain.setValueAtTime(0.4, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.3);
-        } else if (type === 'spawn_portal') {
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'sine'; osc.frequency.setValueAtTime(150, t);
-            osc.frequency.linearRampToValueAtTime(600, t + 0.25);
-            gain.gain.setValueAtTime(0.2, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.25);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.25);
-        } else if (type === 'block') {
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(200, t);
-            gain.gain.setValueAtTime(0.25, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.1);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.1);
-        } else if (type === 'ult_cast') {
-            [440, 554, 659, 880, 1108].forEach((f, i) => {
-                const osc = actx.createOscillator(); const gain = actx.createGain();
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(f, t + i * 0.06);
-                gain.gain.setValueAtTime(0.25, t + i * 0.06);
-                gain.gain.linearRampToValueAtTime(0.01, t + (i + 1) * 0.08);
-                osc.connect(gain); gain.connect(actx.destination);
-                osc.start(t + i * 0.06); osc.stop(t + (i + 1) * 0.08);
-            });
-        } else if (type === 'coin' || type === 'potion') {
-            // Исправлен вызов gain.gain!
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'sine'; osc.frequency.setValueAtTime(900 + Math.random()*500, t);
-            gain.gain.setValueAtTime(0.18, t);
-            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.1);
-        } else if (type === 'golden_beam') {
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(600, t);
-            osc.frequency.linearRampToValueAtTime(1200, t + 0.15);
-            gain.gain.setValueAtTime(0.25, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.15);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.15);
-        } else if (type === 'fanfare') {
-            [440, 554, 659, 880, 1046].forEach((f, i) => {
-                const osc = actx.createOscillator(); const gain = actx.createGain();
-                osc.type = 'square'; osc.frequency.setValueAtTime(f, t + i * 0.1);
-                gain.gain.setValueAtTime(0.25, t + i * 0.1);
-                gain.gain.linearRampToValueAtTime(0.01, t + (i + 1) * 0.1);
-                osc.connect(gain); gain.connect(actx.destination);
-                osc.start(t + i * 0.1); osc.stop(t + (i + 1) * 0.1);
-            });
-        } else if (type === 'hit') {
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'square'; osc.frequency.setValueAtTime(130, t);
-            gain.gain.setValueAtTime(0.3, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.1);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.1);
-        } else if (type === 'item') {
-            [523, 659, 783, 1046].forEach((f, i) => {
-                const osc = actx.createOscillator(); const gain = actx.createGain();
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(f, t + i * 0.05);
-                gain.gain.setValueAtTime(0.2, t + i * 0.05);
-                gain.gain.linearRampToValueAtTime(0.01, t + (i + 1) * 0.05);
-                osc.connect(gain); gain.connect(actx.destination);
-                osc.start(t + i * 0.05); osc.stop(t + (i + 1) * 0.05);
-            });
-        }
-    } catch(err) {
-        console.error("Audio error:", err);
-    }
-}
-
-// --- УПРАВЛЕНИЕ РЕЖИМАМИ (ПК / ТЕЛЕФОН) ---
-function setControlMode(mode) {
-    initAudio();
-    document.body.classList.remove('mode-pc', 'mode-mobile');
-    document.body.classList.add(mode === 'PC' ? 'mode-pc' : 'mode-mobile');
-    const modal = document.getElementById('start-modal');
-    if (modal) modal.style.display = 'none';
-}
-
-document.getElementById('btn-choose-pc').addEventListener('click', (e) => {
-    e.stopPropagation();
-    setControlMode('PC');
-});
-
-document.getElementById('btn-choose-mobile').addEventListener('click', (e) => {
-    e.stopPropagation();
-    setControlMode('MOBILE');
-});
-
-document.getElementById('btn-mode-switch').addEventListener('click', () => {
-    const modal = document.getElementById('start-modal');
-    if (modal) modal.style.display = 'flex';
-});
-
-if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-    document.getElementById('btn-choose-mobile').style.borderColor = '#fbbf24';
-}
-
-// --- CANVAS & INPUT ---
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-ctx.imageSmoothingEnabled = false;
-
-const keys = {};
-let inventoryOpen = false;
-
-window.addEventListener('contextmenu', e => e.preventDefault());
-
-let mousePos = { x: 160, y: 112 };
-canvas.addEventListener('mousemove', e => {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = 320 / rect.width;
-    const scaleY = 224 / rect.height;
-    mousePos.x = (e.clientX - rect.left) * scaleX;
-    mousePos.y = (e.clientY - rect.top) * scaleY;
-});
-
-window.addEventListener('mousedown', e => {
-    initAudio();
-    if (gameState === 'VICTORY') {
-        triggerStreamReaction();
-        return;
-    }
-    if (e.button === 0) raiseShield();
-    else if (e.button === 1) { e.preventDefault(); shootFrostShuriken(); }
-    else if (e.button === 2) { e.preventDefault(); performMeleeAttack(); }
-});
-
-window.addEventListener('mouseup', e => {
-    if (e.button === 0) player.isShielding = false;
-});
-
-window.addEventListener('keydown', e => {
-    initAudio();
-    keys[e.code] = true;
-    if (e.code === 'KeyM') musicEnabled = !musicEnabled;
-    if (e.code === 'KeyR') resetGame();
-    if (e.code === 'KeyQ') switchWeapon();
-    if (e.code === 'KeyE') activateUltimate();
-    if (e.code === 'KeyF' || e.code === 'KeyX') shootFrostShuriken();
-    if (e.code === 'KeyI' || e.code === 'Tab') { e.preventDefault(); inventoryOpen = !inventoryOpen; }
-});
-window.addEventListener('keyup', e => keys[e.code] = false);
-
-// --- ПЛАВАЮЩИЙ СЕНСОРНЫЙ ДЖОЙСТИК ---
-const touchJoystick = {
-    active: false,
-    startX: 0,
-    startY: 0,
-    x: 0,
-    y: 0,
-    touchId: null
-};
-
-const joyArea = document.getElementById('joystick-touch-area');
-const joyStick = document.getElementById('joystick-stick');
-
-function handleJoyStart(e) {
-    e.preventDefault();
-    initAudio();
-    if (gameState === 'VICTORY') return;
-    const touch = e.changedTouches[0];
-    touchJoystick.active = true;
-    touchJoystick.touchId = touch.identifier;
-    touchJoystick.startX = touch.clientX;
-    touchJoystick.startY = touch.clientY;
-    touchJoystick.x = 0;
-    touchJoystick.y = 0;
-    joyStick.style.transform = `translate(0px, 0px)`;
-}
-
-function handleJoyMove(e) {
-    e.preventDefault();
-    if (!touchJoystick.active) return;
-
-    for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        if (touch.identifier === touchJoystick.touchId) {
-            const dx = touch.clientX - touchJoystick.startX;
-            const dy = touch.clientY - touchJoystick.startY;
-            const dist = Math.hypot(dx, dy);
-            const maxRadius = 48;
-
-            let normX = dx / (dist || 1);
-            let normY = dy / (dist || 1);
-            let clamped = Math.min(dist, maxRadius);
-
-            joyStick.style.transform = `translate(${normX * clamped}px, ${normY * clamped}px)`;
-
-            if (dist > 6) {
-                touchJoystick.x = normX * (clamped / maxRadius);
-                touchJoystick.y = normY * (clamped / maxRadius);
-            } else {
-                touchJoystick.x = 0;
-                touchJoystick.y = 0;
-            }
-            break;
-        }
-    }
-}
-
-function handleJoyEnd(e) {
-    for (let i = 0; i < e.changedTouches.length; i++) {
-        if (e.changedTouches[i].identifier === touchJoystick.touchId) {
-            touchJoystick.active = false;
-            touchJoystick.touchId = null;
-            touchJoystick.x = 0;
-            touchJoystick.y = 0;
-            joyStick.style.transform = `translate(0px, 0px)`;
-            break;
-        }
-    }
-}
-
-joyArea.addEventListener('touchstart', handleJoyStart, { passive: false });
-joyArea.addEventListener('touchmove', handleJoyMove, { passive: false });
-joyArea.addEventListener('touchend', handleJoyEnd, { passive: false });
-joyArea.addEventListener('touchcancel', handleJoyEnd, { passive: false });
-
-function bindTouch(id, onDown, onUp) {
-    const btn = document.getElementById(id);
-    if (!btn) return;
-    btn.addEventListener('touchstart', e => {
-        e.preventDefault();
-        initAudio();
-        btn.classList.add('active');
-        if (onDown) onDown();
-    }, { passive: false });
-
-    btn.addEventListener('touchend', e => {
-        e.preventDefault();
-        btn.classList.remove('active');
-        if (onUp) onUp();
-    }, { passive: false });
-
-    btn.addEventListener('touchcancel', () => {
-        btn.classList.remove('active');
-        if (onUp) onUp();
-    });
-}
-
-bindTouch('btn-atk', () => {
-    if (gameState === 'VICTORY') triggerStreamReaction();
-    else performMeleeAttack();
-});
-bindTouch('btn-def', () => raiseShield(), () => { player.isShielding = false; });
-bindTouch('btn-ice', () => shootFrostShuriken());
-bindTouch('btn-dash', () => triggerDash());
-bindTouch('btn-ult', () => activateUltimate());
-
-document.getElementById('btn-inv').addEventListener('click', () => { initAudio(); inventoryOpen = !inventoryOpen; });
-document.getElementById('btn-swap').addEventListener('click', () => { initAudio(); switchWeapon(); });
-document.getElementById('btn-restart').addEventListener('click', () => { initAudio(); resetGame(); });
-
-function triggerDash() {
-    if (!player.isSliding && player.sp >= 20 && !player.isShielding) {
-        let sx = touchJoystick.active ? touchJoystick.x : 0;
-        let sy = touchJoystick.active ? touchJoystick.y : 0;
-
-        if (sx === 0 && sy === 0) {
-            if (player.facing === 'up') sy = -1;
-            if (player.facing === 'down') sy = 1;
-            if (player.facing === 'left') sx = -1;
-            if (player.facing === 'right') sx = 1;
-        }
-
-        const len = Math.hypot(sx, sy) || 1;
-        player.isSliding = true;
-        player.slideTimer = 18;
-        player.slideDir = { x: sx / len, y: sy / len };
-        player.sp -= 20;
-        player.invul = 20;
-        playSound('item');
-    }
-}
-
-// --- GAME OBJECTS & STATE ---
-let screenShake = 0;
-let floatingTexts = [];
-let particles = [];
-let drops = []; // Колбочки с зельями
-let ultProjectiles = [];
-let ultActive = false;
-let ultTimer = 0;
-let gameState = 'PLAY'; // PLAY, VICTORY, GAMEOVER
-let torchFrame = 0;
-let torchTimer = 0;
-
-let currentRoom = 'CATACOMBS';
-let gateOpened = false;
-let throneDoorLocked = false;
-
-let transition = {
-    active: false,
-    alpha: 0,
-    state: 'in',
-    targetRoom: 'THRONE'
-};
-
-const catacombsTorches = [{ x: 32, y: 16 }, { x: 288, y: 16 }, { x: 32, y: 180 }, { x: 288, y: 180 }];
-const throneTorches = [{ x: 48, y: 24 }, { x: 272, y: 24 }, { x: 48, y: 100 }, { x: 272, y: 100 }];
-
-let spawnPortals = [];
-let spawnTimer = 180;
-const MAX_BAMBOCHI_CATACOMBS = 4;
-const MAX_BAMBOCHI_THRONE = 3;
-
-// ИГРОК
-const player = {
-    x: 152, y: 160,
-    w: 16, h: 18,
-    speed: 1.8,
-    hp: 6, maxHp: 6,
-    sp: 100, maxSp: 100,
-    hype: 0, maxHype: 100,
-    invul: 0,
-    facing: 'up',
-    isAttacking: false,
-    attackTimer: 0,
-    isShielding: false,
-    parryWindow: 0,
-    isSliding: false,
-    slideTimer: 0,
-    slideDir: { x: 0, y: 0 },
-    walkFrame: 0,
-    walkTimer: 0,
-    schedules: 0,
-    totalSchedules: 3,
-
-    weapon: 'blue_fish',
-    hasGoldenFish: false,
-    armor: 'red_scarf',
-    hasArmoredScarf: false,
-
-    holdingItem: null,
-    holdTimer: 0
-};
-
-let chests = [
-    { x: 34, y: 80, item: 'armored_scarf', opened: false, name: 'БРОНИРОВАННЫЙ ШАРФ' },
-    { x: 270, y: 80, item: 'golden_fish', opened: false, name: 'ЗОЛОТАЯ РЫБА-КЛИНОК' }
-];
-
-let scrolls = [
-    { x: 40, y: 140, collected: false },
-    { x: 268, y: 140, collected: false },
-    { x: 152, y: 80, collected: false }
-];
-
-function createInitialMinions() {
-    return [
-        { x: 70, y: 120, hp: 3, maxHp: 3, speed: 0.65, dirX: 1, dirY: 0, timer: 30, invul: 0, freezeTimer: 0, dead: false, name: 'Бамбоч' },
-        { x: 230, y: 120, hp: 3, maxHp: 3, speed: 0.65, dirX: -1, dirY: 0, timer: 45, invul: 0, freezeTimer: 0, dead: false, name: 'Бамбоч' }
-    ];
-}
-
-let minions = createInitialMinions();
-
-const boss = {
-    active: false,
-    x: 146, y: 34,
-    w: 28, h: 32,
-    hp: 36, maxHp: 36,
-    speed: 0.70,
-    baseSpeed: 0.70,
-    shootTimer: 60,
-    state: 'PATROL',
-    overheatTimer: 0,
-    hitStun: 0,
-    invul: 0,
-    dir: 1,
-    isRage: false
-};
-
-let projectiles = [];
-let playerShots = [];
-
-let dialog = {
-    speaker: "ПИНГВИН",
-    text: "Катакомбы Чата! Выбивай зелья из Бамбочей и найди 3 свитка расписания!",
-    timer: 260, portrait: 'penguin'
-};
-
-// ВЫБИВАНИЕ ЗЕЛИЙ В БОЮ
-function tryDropPotion(x, y, forcedType) {
-    const roll = Math.random();
-    let type = forcedType;
-    if (!type) {
-        if (roll < 0.45) type = 'potion_hp';
-        else if (roll < 0.75) type = 'potion_sp';
-        else if (roll < 0.95) type = 'star_hype';
-        else return;
-    }
-
-    drops.push({
-        x: x + (Math.random() - 0.5) * 6,
-        y: y + (Math.random() - 0.5) * 6,
-        type: type,
-        life: 500,
-        bobTimer: Math.random() * Math.PI
-    });
-}
-
-// ЧАТ ПОБЕДНОГО СТРИМА
-let streamChat = [
-    { user: "[Mod] Модер_Димон", text: "Стрим запущен! Всем привет!", color: '#38bdf8' },
-    { user: "Олег_2004", text: "ПИНГВИН — НАСТОЯЩИЙ MVP!", color: '#fbbf24' },
-    { user: "Everton_Fan", text: "Футболка Эвертона имба! 💙", color: '#60a5fa' }
-];
-
-const chatPool = [
-    { user: "Чаттер_12", text: "Колянчик 1:6 в слезах роняет геймпад KEKW", color: '#e879f9' },
-    { user: "Донатер_777", text: "ДОНАТ 500₽: Спасибо пингвину за стрим!", color: '#4ade80' },
-    { user: "Sub_Pro", text: "PogChamp Наконец-то дождались!", color: '#f43f5e' },
-    { user: "Everton_Ultra", text: "UP THE TOFFEES! ВПЕРЁД ЭВЕРТОН!", color: '#38bdf8' },
-    { user: "Бамбоч_Реформированный", text: "Простите, мы больше не будем токсичить!", color: '#c084fc' },
-    { user: "Gamer_2024", text: "Золотая рыба зарешала боссфайт!", color: '#fbbf24' },
-    { user: "Чаттер_99", text: "Стрим сегодня в 19:00 по расписанию!", color: '#a3e635' },
-    { user: "Viewer_VIP", text: "LUL Генерал 1:6 перегрелся!", color: '#f472b6' }
-];
-
-let streamReactionParticles = [];
-let streamChatTimer = 0;
-
-function triggerStreamReaction() {
-    playSound('coin');
-    for (let i = 0; i < 4; i++) {
-        streamReactionParticles.push({
-            x: 180 + (Math.random() - 0.5) * 60,
-            y: 220,
-            vy: -2 - Math.random() * 2,
-            vx: (Math.random() - 0.5) * 1.5,
-            char: Math.random() > 0.5 ? '💙' : '⭐',
-            life: 60
-        });
-    }
-}
-
-function spawnBambochPortal(customX, customY) {
-    const px = customX !== undefined ? customX : Math.floor(Math.random() * 240 + 35);
-    const py = customY !== undefined ? customY : Math.floor(Math.random() * 100 + 55);
-
-    spawnPortals.push({
-        x: px, y: py,
-        timer: 55, maxTimer: 55
-    });
-    playSound('spawn_portal');
-}
-
-function raiseShield() {
-    if (player.hp > 0 && !player.isSliding && !player.isAttacking && player.sp >= 5) {
-        player.isShielding = true;
-        player.parryWindow = 12;
-    }
-}
-
-function shootFrostShuriken() {
-    if (player.hp > 0 && player.sp >= 20 && !player.isShielding && !transition.active && playerShots.length < 4) {
-        player.sp -= 20;
-        playSound('frost_shuriken');
-
-        let vx = 0, vy = 0;
-        if (touchJoystick.active && (touchJoystick.x !== 0 || touchJoystick.y !== 0)) {
-            vx = touchJoystick.x * 4.0;
-            vy = touchJoystick.y * 4.0;
-        } else {
-            if (player.facing === 'right') vx = 4.0;
-            if (player.facing === 'left') vx = -4.0;
-            if (player.facing === 'up') vy = -4.0;
-            if (player.facing === 'down') vy = 4.0;
-        }
-
-        playerShots.push({
-            x: player.x + 8,
-            y: player.y + 9,
-            vx, vy,
-            life: 75,
-            type: 'frost_shuriken',
-            rot: 0
-        });
-
-        addFloatingText(player.x - 4, player.y - 8, "ICE SHURIKEN!", '#38bdf8');
-    }
-}
-
-function performMeleeAttack() {
-    if (!player.isAttacking && player.attackTimer === 0 && player.hp > 0 && !inventoryOpen && !player.isShielding && !transition.active) {
-        player.isAttacking = true;
-        player.attackTimer = 14;
-        playSound('slash');
-
-        if (player.weapon === 'golden_fish' && player.hp === player.maxHp && playerShots.length < 4) {
-            playSound('golden_beam');
-            let vx = 0, vy = 0;
-            if (player.facing === 'right') vx = 4.2;
-            if (player.facing === 'left') vx = -4.2;
-            if (player.facing === 'up') vy = -4.2;
-            if (player.facing === 'down') vy = 4.2;
-
-            playerShots.push({
-                x: player.x + 8, y: player.y + 8,
-                vx, vy, life: 80, type: 'golden_wave', rot: 0
-            });
-        }
-    }
-}
-
-function activateUltimate() {
-    if (player.hype >= 100 && player.hp > 0 && !ultActive && !transition.active) {
-        player.hype = 0;
-        ultActive = true;
-        ultTimer = 120;
-        screenShake = 25;
-        playSound('ult_cast');
-
-        addFloatingText(100, 70, "★ ДОНАТНЫЙ РЕЙД! ★", '#f43f5e');
-        dialog = {
-            speaker: "ФАВОРИТ",
-            text: "РЕЙД ОТ САБОВ! ГРАД ДОНАТОВ И ЗОЛОТОЙ РЫБЫ!",
-            timer: 200, portrait: 'penguin'
-        };
-
-        for (let i = 0; i < 25; i++) {
-            ultProjectiles.push({
-                x: Math.random() * 260 + 30,
-                y: -10 - Math.random() * 150,
-                vy: 4 + Math.random() * 3,
-                type: (i === 0) ? 'giant_fish' : 'coin',
-                life: 180
-            });
-        }
-    }
-}
-
-function addHype(amount) {
-    player.hype = Math.min(player.maxHype, player.hype + amount);
-    if (player.hype === player.maxHype) {
-        addFloatingText(player.x - 10, player.y - 12, "HYPE 100%! [⚡]", '#fbbf24');
-    }
-}
-
-function switchWeapon() {
-    if (!player.hasGoldenFish) return;
-    player.weapon = (player.weapon === 'blue_fish') ? 'golden_fish' : 'blue_fish';
-    playSound('item');
-    addFloatingText(player.x, player.y - 6, player.weapon === 'golden_fish' ? "ОРУЖИЕ: ЗОЛОТАЯ РЫБА" : "ОРУЖИЕ: СИНЯЯ РЫБА", '#fbbf24');
-}
-
-function startRoomTransition(targetRoom) {
-    transition.active = true;
-    transition.state = 'in';
-    transition.alpha = 0;
-    transition.targetRoom = targetRoom;
-    projectiles = [];
-    playerShots = [];
-    spawnPortals = [];
-}
-
-// ЕДИНАЯ ФУНКЦИЯ ПОБЕДЫ НАД БОССОМ
-function triggerVictory() {
-    if (gameState === 'VICTORY') return;
-    gameState = 'VICTORY';
-    boss.hp = 0;
-    boss.active = false;
-    screenShake = 25;
-    playSound('fanfare');
-
-    // Очищаем всех врагов и снаряды, делаем игрока неуязвимым
-    minions = [];
-    spawnPortals = [];
-    projectiles = [];
-    playerShots = [];
-    ultProjectiles = [];
-    drops = [];
-    player.invul = 999999;
-}
-
-function resetGame() {
-    currentRoom = 'CATACOMBS';
-    gateOpened = false;
-    throneDoorLocked = false;
-    transition.active = false;
-    transition.alpha = 0;
-
-    player.x = 152; player.y = 160; player.hp = 6; player.maxHp = 6; player.sp = 100; player.hype = 0;
-    player.schedules = 0; player.invul = 0; player.holdingItem = null; player.holdTimer = 0;
-    player.isShielding = false; player.weapon = 'blue_fish'; player.hasGoldenFish = false;
-    player.armor = 'red_scarf'; player.hasArmoredScarf = false;
-    player.facing = 'up';
-
-    chests.forEach(c => c.opened = false);
-    scrolls.forEach(s => s.collected = false);
-
-    minions = createInitialMinions();
-    spawnPortals = [];
-    drops = [];
-    spawnTimer = 180;
-
-    boss.active = false; boss.hp = 36; boss.isRage = false; boss.x = 146; boss.y = 34; boss.hitStun = 0;
-    boss.state = 'PATROL'; boss.overheatTimer = 0;
-    projectiles = []; playerShots = []; ultProjectiles = [];
-    ultActive = false;
-    gameState = 'PLAY';
-    dialog = {
-        speaker: "ПИНГВИН",
-        text: "Катакомбы Чата! Найди 3 свитка расписания и открой ворота!",
-        timer: 200, portrait: 'penguin'
-    };
-}
-
-function addFloatingText(x, y, text, color = '#ffeb3b') {
-    floatingTexts.push({ x, y, text, color, life: 45, vy: -0.5 });
-}
-
-function spawnSparks(x, y, color, count = 6) {
-    for (let i = 0; i < count; i++) {
-        particles.push({
-            x, y,
-            vx: (Math.random() - 0.5) * 3,
-            vy: (Math.random() - 0.5) * 3,
-            life: 16 + Math.random() * 8,
-            color
-        });
-    }
-}
-
-// --- RENDER HELPERS ---
-function drawShadow(x, y, w, h) {
-    ctx.fillStyle = 'rgba(5, 7, 13, 0.45)';
-    ctx.beginPath();
-    ctx.ellipse(x + w / 2, y + h, w / 2.1, 3, 0, 0, Math.PI * 2);
-    ctx.fill();
-}
-
-function draw16BitPortal(p) {
-    const px = Math.round(p.x), py = Math.round(p.y);
-    const progress = 1 - (p.timer / p.maxTimer);
-    ctx.save();
-    ctx.translate(px + 7, py + 7);
-    ctx.rotate(Date.now() * 0.01);
-    ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.ellipse(0, 0, 8 * progress + 2, 4 * progress + 1, 0, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = '#7c3aed'; ctx.beginPath(); ctx.arc(0, 0, 4 * progress + 1, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.fillRect(-1, -1, 2, 2);
-    ctx.restore();
-}
-
-function draw16BitChest(c) {
-    const cx = c.x, cy = c.y;
-    drawShadow(cx, cy, 16, 14);
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(cx, cy, 16, 14);
-    if (c.opened) {
-        ctx.fillStyle = '#78350f'; ctx.fillRect(cx + 1, cy + 5, 14, 8);
-        ctx.fillStyle = '#1e293b'; ctx.fillRect(cx + 2, cy + 2, 12, 4);
-        ctx.fillStyle = '#f59e0b'; ctx.fillRect(cx + 1, cy + 6, 14, 2);
-    } else {
-        ctx.fillStyle = '#92400e'; ctx.fillRect(cx + 1, cy + 1, 14, 12);
-        ctx.fillStyle = '#b45309'; ctx.fillRect(cx + 2, cy + 2, 12, 10);
-        ctx.fillStyle = '#fbbf24'; ctx.fillRect(cx + 2, cy + 1, 2, 12); ctx.fillRect(cx + 12, cy + 1, 2, 12); ctx.fillRect(cx + 7, cy + 6, 2, 3);
-    }
-}
-
-function draw16BitPotion(d) {
-    const dx = Math.round(d.x);
-    const dy = Math.round(d.y) + Math.sin(Date.now() * 0.006 + d.bobTimer) * 2;
-    drawShadow(dx, dy + 2, 8, 8);
-
-    if (d.type === 'potion_hp') {
-        ctx.fillStyle = '#881337'; ctx.fillRect(dx + 2, dy, 4, 2);
-        ctx.fillStyle = '#be123c'; ctx.fillRect(dx + 1, dy + 2, 6, 7);
-        ctx.fillStyle = '#fb7185'; ctx.fillRect(dx + 2, dy + 3, 2, 2);
-    } else if (d.type === 'potion_sp') {
-        ctx.fillStyle = '#0369a1'; ctx.fillRect(dx + 2, dy, 4, 2);
-        ctx.fillStyle = '#0284c7'; ctx.fillRect(dx + 1, dy + 2, 6, 7);
-        ctx.fillStyle = '#7dd3fc'; ctx.fillRect(dx + 2, dy + 3, 2, 2);
-    } else if (d.type === 'star_hype') {
-        ctx.fillStyle = '#fbbf24'; ctx.fillRect(dx + 1, dy + 1, 6, 6);
-        ctx.fillStyle = '#fff'; ctx.fillRect(dx + 2, dy + 2, 2, 2);
-    }
-}
-
-function draw16BitPenguin(p) {
-    const px = Math.round(p.x), py = Math.round(p.y);
-    drawShadow(px, py, p.w, p.h);
-
-    if (p.holdTimer > 0) {
-        ctx.fillStyle = '#0b0f19'; ctx.fillRect(px + 2, py + 4, 12, 14);
-        ctx.fillStyle = '#cbd5e1'; ctx.fillRect(px + 4, py + 8, 8, 9);
-        ctx.fillStyle = '#fbbf24'; ctx.fillRect(px + 6, py + 8, 4, 3);
-        ctx.fillStyle = '#1e293b'; ctx.fillRect(px + 1, py + 2, 3, 6); ctx.fillRect(px + 12, py + 2, 3, 6);
-        if (p.holdingItem === 'golden_fish') {
-            ctx.fillStyle = '#fbbf24'; ctx.fillRect(px + 3, py - 10, 10, 6);
-            ctx.fillStyle = '#fff'; ctx.fillRect(px + 5, py - 9, 6, 2);
-        } else if (p.holdingItem === 'armored_scarf') {
-            ctx.fillStyle = '#94a3b8'; ctx.fillRect(px + 3, py - 8, 10, 4);
-            ctx.fillStyle = '#475569'; ctx.fillRect(px + 6, py - 9, 4, 6);
-        }
-        return;
-    }
-
-    if (p.isSliding) {
-        ctx.fillStyle = '#0b0f19'; ctx.fillRect(px, py + 6, 18, 10);
-        ctx.fillStyle = '#cbd5e1'; ctx.fillRect(px + 2, py + 10, 14, 5);
-        ctx.fillStyle = '#1e293b'; ctx.fillRect(px + 2, py + 7, 14, 4);
-        ctx.fillStyle = p.armor === 'armored_scarf' ? '#94a3b8' : '#e11d48';
-        ctx.fillRect(px + (p.facing === 'left' ? 2 : 12), py + 6, 4, 3);
-        ctx.fillStyle = '#fbbf24'; ctx.fillRect(px + (p.facing === 'left' ? -2 : 16), py + 8, 4, 3);
-        return;
-    }
-
-    const bounce = p.walkFrame === 1 ? -1 : 0;
-    ctx.fillStyle = '#0b0f19'; ctx.fillRect(px + 2, py + bounce, 12, 18);
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(px + 2, py + 1 + bounce, 12, 15);
-    ctx.fillStyle = '#cbd5e1'; ctx.fillRect(px + 4, py + 6 + bounce, 8, 9);
-    ctx.fillStyle = '#f8fafc'; ctx.fillRect(px + 5, py + 6 + bounce, 6, 7);
-
-    if (p.armor === 'armored_scarf') {
-        ctx.fillStyle = '#475569'; ctx.fillRect(px + 3, py + 5 + bounce, 10, 3);
-        ctx.fillStyle = '#94a3b8'; ctx.fillRect(px + 4, py + 5 + bounce, 8, 2);
-        ctx.fillStyle = '#f8fafc'; ctx.fillRect(px + 6, py + 5 + bounce, 2, 1);
-    } else {
-        ctx.fillStyle = '#9f1239'; ctx.fillRect(px + 3, py + 5 + bounce, 10, 3);
-        ctx.fillStyle = '#e11d48'; ctx.fillRect(px + 4, py + 5 + bounce, 8, 2);
-    }
-
-    ctx.fillStyle = '#0f172a';
-    if (p.facing === 'left') {
-        ctx.fillRect(px + 3, py + 3 + bounce, 2, 3); ctx.fillStyle = '#fff'; ctx.fillRect(px + 3, py + 3 + bounce, 1, 1);
-    } else if (p.facing === 'right') {
-        ctx.fillRect(px + 11, py + 3 + bounce, 2, 3); ctx.fillStyle = '#fff'; ctx.fillRect(px + 12, py + 3 + bounce, 1, 1);
-    } else {
-        ctx.fillRect(px + 4, py + 3 + bounce, 2, 3); ctx.fillRect(px + 10, py + 3 + bounce, 2, 3);
-        ctx.fillStyle = '#fff'; ctx.fillRect(px + 4, py + 3 + bounce, 1, 1); ctx.fillRect(px + 10, py + 3 + bounce, 1, 1);
-    }
-
-    ctx.fillStyle = '#d97706'; ctx.fillRect(px + 6, py + 5 + bounce, 4, 3);
-    ctx.fillStyle = '#ea580c'; ctx.fillRect(px + 3, py + 16, 3, 2); ctx.fillRect(px + 10, py + 16, 3, 2);
-
-    if (p.isShielding) {
-        ctx.save();
-        ctx.translate(px + 8, py + 9);
-        let angle = 0;
-        if (p.facing === 'right') angle = 0;
-        if (p.facing === 'down') angle = Math.PI / 2;
-        if (p.facing === 'left') angle = Math.PI;
-        if (p.facing === 'up') angle = -Math.PI / 2;
-        ctx.rotate(angle);
-        ctx.fillStyle = p.parryWindow > 0 ? '#38bdf8' : '#0284c7'; ctx.fillRect(10, -7, 4, 14);
-        ctx.fillStyle = '#e0f2fe'; ctx.fillRect(11, -5, 2, 10);
-        ctx.fillStyle = '#0284c7'; ctx.fillRect(11, -1, 2, 2);
-        if (p.parryWindow > 6) {
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(9, -8, 6, 16);
-        }
-        ctx.restore();
-    }
-
-    if (p.isAttacking) {
-        ctx.save();
-        ctx.translate(px + 8, py + 8);
-        let angle = 0;
-        if (p.facing === 'right') angle = 0;
-        if (p.facing === 'down') angle = Math.PI / 2;
-        if (p.facing === 'left') angle = Math.PI;
-        if (p.facing === 'up') angle = -Math.PI / 2;
-        ctx.rotate(angle);
-        const isGold = p.weapon === 'golden_fish';
-        ctx.strokeStyle = isGold ? 'rgba(251, 191, 36, 0.95)' : 'rgba(56, 189, 248, 0.9)';
-        ctx.lineWidth = isGold ? 4 : 3;
-        ctx.beginPath(); ctx.arc(4, 0, 19, -Math.PI / 3, Math.PI / 3); ctx.stroke();
-        ctx.fillStyle = isGold ? '#d97706' : '#0284c7'; ctx.fillRect(10, -4, 12, 7);
-        ctx.fillStyle = isGold ? '#fef08a' : '#38bdf8'; ctx.fillRect(12, -3, 8, 3);
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(8, -2, 3, 3);
-        ctx.restore();
-    }
-}
-
-function draw16BitBoss(b) {
-    const bx = Math.round(b.x), by = Math.round(b.y);
-    drawShadow(bx, by, b.w, b.h);
-    if (b.invul > 0 && b.invul % 4 > 2) return;
-
-    ctx.fillStyle = b.isRage ? '#991b1b' : '#0f172a';
-    ctx.fillRect(bx + 2, by, 24, 30); ctx.fillRect(bx, by + 4, 28, 24);
-    ctx.fillStyle = b.isRage ? '#7f1d1d' : '#1e3a29';
-    ctx.fillRect(bx + 4, by + 1, 20, 7);
-    ctx.fillStyle = '#fbbf24'; ctx.fillRect(bx + 11, by + 3, 6, 4);
-
-    ctx.fillStyle = b.isRage ? '#fca5a5' : '#fbcfe8';
-    ctx.fillRect(bx + 6, by + 10, 16, 9);
-    ctx.fillStyle = '#111'; ctx.fillRect(bx + 8, by + 12, 3, 2); ctx.fillRect(bx + 17, by + 12, 3, 2);
-    ctx.fillStyle = '#881337'; ctx.fillRect(bx + 12, by + 16, 4, 1);
-
-    ctx.fillStyle = b.isRage ? '#991b1b' : '#14532d';
-    ctx.fillRect(bx + 4, by + 19, 20, 11);
-    ctx.fillStyle = '#fbbf24'; ctx.fillRect(bx + 2, by + 19, 4, 4); ctx.fillRect(bx + 22, by + 19, 4, 4);
-
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(bx + 5, by + 23, 18, 9);
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(bx + 6, by + 24, 16, 7);
-    ctx.fillStyle = b.isRage ? '#ef4444' : '#22c55e'; ctx.fillRect(bx + 13, by + 24, 3, 3);
-    ctx.fillStyle = '#38bdf8'; ctx.fillRect(bx + 18, by + 25, 2, 2);
-    ctx.fillStyle = '#ef4444'; ctx.fillRect(bx + 20, by + 25, 2, 2);
-    ctx.fillStyle = '#22c55e'; ctx.fillRect(bx + 19, by + 27, 2, 2);
-    ctx.fillStyle = '#eab308'; ctx.fillRect(bx + 19, by + 23, 2, 2);
-
-    if (b.state === 'OVERHEAT') {
-        ctx.fillStyle = '#38bdf8'; ctx.fillRect(bx + 24, by - 4, 3, 4);
-        ctx.fillStyle = '#fff'; ctx.fillRect(bx + 24, by - 3, 1, 1);
-        if (Math.floor(Date.now() / 200) % 2 === 0) 
+        <div id="joystick-touch-are
