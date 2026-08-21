@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>16-BIT: Пингвин и Расписание (Mobile Vertical Edition)</title>
+    <title>16-BIT: Пингвин и Расписание</title>
     
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -25,8 +25,9 @@
             touch-action: none;
         }
         body {
-            background: #06080d;
+            background: #05070a;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -37,28 +38,87 @@
             color: #d1d5db;
         }
 
-        /* ОСНОВНОЙ КОНТЕЙНЕР (ВЕРТИКАЛЬНЫЙ КОНСОЛЬНЫЙ ФОРМАТ) */
+        /* --- СТАРТОВОЕ МЕНЮ ВЫБОРА УПРАВЛЕНИЯ --- */
+        #start-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(5, 7, 10, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .modal-box {
+            background: linear-gradient(145deg, #1b2233, #0f1422);
+            border: 3px solid #fbbf24;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 35px rgba(251, 191, 36, 0.25);
+        }
+        .modal-title {
+            color: #fbbf24;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: monospace;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .modal-subtitle {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        .modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn-select-mode {
+            background: #1e293b;
+            border: 2px solid #38bdf8;
+            color: #fff;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.15s ease;
+        }
+        .btn-select-mode:active, .btn-select-mode:hover {
+            background: #0284c7;
+            border-color: #fff;
+            transform: scale(0.98);
+        }
+        .btn-select-mode span {
+            font-size: 20px;
+        }
+
+        /* --- КОРПУС ИГРЫ --- */
         #console-wrapper {
             display: flex;
             flex-direction: column;
             width: 100%;
             height: 100%;
-            max-width: 540px; /* Идеальная ширина под телефон */
-            max-height: 960px;
-            background: linear-gradient(180deg, #111522 0%, #080a10 100%);
             position: relative;
+            background: linear-gradient(180deg, #111522 0%, #080a10 100%);
         }
 
         /* ВЕРХНЯЯ ЧАСТЬ: ИГРОВОЙ ЭКРАН */
         #screen-section {
             position: relative;
             width: 100%;
-            flex: 1 1 55%;
             display: flex;
             justify-content: center;
             align-items: center;
             background: #000;
-            border-bottom: 3px solid #334155;
             padding: 4px;
         }
         canvas {
@@ -66,7 +126,6 @@
             background-color: #0b0e14;
             width: 100%;
             height: 100%;
-            max-height: 100%;
             object-fit: contain;
             border-radius: 4px;
         }
@@ -79,7 +138,7 @@
             border-radius: 4px;
         }
 
-        /* ВЕРХНЕЕ МЕНЮ НАД ЭКРАНОМ */
+        /* ВЕРХНЯЯ ПАНЕЛЬ МЕНЮ */
         #top-bar {
             position: absolute;
             top: 8px;
@@ -96,12 +155,12 @@
             border-radius: 6px;
             font-size: 11px;
             font-weight: bold;
+            cursor: pointer;
         }
         .btn-top:active { background: #38bdf8; color: #000; }
 
-        /* НИЖНЯЯ ЧАСТЬ: ПУЛЬТ УПРАВЛЕНИЯ (GAMEPAD) */
+        /* НИЖНЯЯ ЧАСТЬ: СЕНСОРНЫЙ ГЕЙМПАД */
         #gamepad-section {
-            flex: 1 1 45%;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -111,7 +170,6 @@
             border-top: 1px solid #1e293b;
         }
 
-        /* ЛЕВАЯ ЗОНА: ПЛАВАЮЩИЙ ДЖОЙСТИК */
         #joystick-touch-area {
             flex: 1;
             height: 100%;
@@ -143,7 +201,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.6);
         }
 
-        /* ПРАВАЯ ЗОНА: КНОПКИ ДЕЙСТВИЯ */
         #actions-touch-area {
             flex: 1;
             height: 100%;
@@ -169,6 +226,7 @@
             border: 2px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 5px 12px rgba(0,0,0,0.7);
             touch-action: none;
+            cursor: pointer;
         }
         .touch-btn:active, .touch-btn.active {
             transform: scale(0.9);
@@ -187,30 +245,85 @@
         .btn-dash { background: radial-gradient(circle, #10b981, #047857); border-color: #34d399; grid-column: 3; grid-row: 2; }
         .btn-ult { background: radial-gradient(circle, #f43f5e, #be123c); border-color: #fda4af; grid-column: 3; grid-row: 1; }
 
-        /* НА ШИРОКИХ ЭКРАНАХ (ПК) */
-        @media (min-width: 800px) and (orientation: landscape) {
-            #console-wrapper {
-                max-width: 900px;
-                max-height: 640px;
-                flex-direction: row;
-            }
-            #screen-section {
-                flex: 1 1 70%;
-                border-bottom: none;
-                border-right: 3px solid #334155;
-            }
-            #gamepad-section {
-                flex: 1 1 30%;
-                flex-direction: column;
-                justify-content: space-around;
-            }
-            #actions-touch-area {
-                padding-left: 0;
-            }
+        .pc-help {
+            margin-top: 10px;
+            font-size: 12px;
+            font-family: monospace;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        .key {
+            color: #fbbf24;
+            font-weight: bold;
+            background: #1e293b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #475569;
+        }
+
+        /* --- СТИЛИЗАЦИЯ ПОД ВЫБРАННЫЙ РЕЖИМ --- */
+        /* РЕЖИМ ПК: СКРЫВАЕМ МОБИЛЬНЫЙ ГЕЙМПАД */
+        body.mode-pc #gamepad-section {
+            display: none !important;
+        }
+        body.mode-pc #console-wrapper {
+            max-width: 840px;
+            max-height: 600px;
+            height: auto;
+            border-radius: 12px;
+            border: 2px solid #374151;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 35px rgba(56, 189, 248, 0.2);
+            padding: 8px;
+            background: linear-gradient(145deg, #1b202e, #0c0e14);
+        }
+        body.mode-pc #screen-section {
+            height: 560px;
+            flex: none;
+            width: 800px;
+            border-bottom: none;
+        }
+        body.mode-pc .pc-help {
+            display: flex;
+        }
+
+        /* РЕЖИМ ТЕЛЕФОНА: ВЕРТИКАЛЬНЫЙ КОНСОЛЬНЫЙ ВИД */
+        body.mode-mobile #console-wrapper {
+            max-width: 540px;
+            max-height: 960px;
+            height: 100%;
+        }
+        body.mode-mobile #screen-section {
+            flex: 1 1 55%;
+            border-bottom: 3px solid #334155;
+        }
+        body.mode-mobile #gamepad-section {
+            flex: 1 1 45%;
+            display: flex;
+        }
+        body.mode-mobile .pc-help {
+            display: none !important;
         }
     </style>
 </head>
-<body>
+<body class="mode-pc">
+
+<!-- СТАРТОВОЕ ОКНО ВЫБОРА УПРАВЛЕНИЯ -->
+<div id="start-modal">
+    <div class="modal-box">
+        <div class="modal-title">★ ПИНГВИН И РАСПИСАНИЕ ★</div>
+        <div class="modal-subtitle">Выберите ваше устройство для удобной игры:</div>
+        <div class="modal-buttons">
+            <button class="btn-select-mode" id="btn-choose-pc">
+                <span>💻</span> КОМПЬЮТЕР (Мышь + Клавиатура)
+            </button>
+            <button class="btn-select-mode" id="btn-choose-mobile">
+                <span>📱</span> ТЕЛЕФОН (Сенсорный Геймпад)
+            </button>
+        </div>
+    </div>
+</div>
 
 <div id="console-wrapper">
     <!-- ВЕРХ: ИГРОВОЙ ЭКРАН -->
@@ -219,22 +332,21 @@
         <div class="scanlines"></div>
 
         <div id="top-bar">
+            <button class="btn-top" id="btn-mode-switch">⚙️ РЕЖИМ</button>
             <button class="btn-top" id="btn-inv">🎒 ИНВЕНТАРЬ</button>
             <button class="btn-top" id="btn-swap">🔄 СМЕНА</button>
             <button class="btn-top" id="btn-restart">🔁 R</button>
         </div>
     </div>
 
-    <!-- НИЗ: СЕНСОРНЫЙ ГЕЙМПАД ДЛЯ ТЕЛЕФОНА -->
+    <!-- НИЗ: СЕНСОРНЫЙ ГЕЙМПАД (СКРЫВАЕТСЯ НА ПК) -->
     <div id="gamepad-section">
-        <!-- Левая половина: Плавающий Джойстик -->
         <div id="joystick-touch-area">
             <div id="joystick-base">
                 <div id="joystick-stick"></div>
             </div>
         </div>
 
-        <!-- Правая половина: Кнопки ДЕЙСТВИЙ -->
         <div id="actions-touch-area">
             <div class="touch-btn btn-ice" id="btn-ice">
                 ❄️<span class="btn-label">ЛЁД</span>
@@ -253,6 +365,17 @@
             </div>
         </div>
     </div>
+</div>
+
+<div class="pc-help">
+    <div><span class="key">WASD</span> Бег</div>
+    <div><span class="key">ПКМ</span> Удар</div>
+    <div><span class="key">ЛКМ</span> Щит / Парирование</div>
+    <div><span class="key">СКМ / F</span> Сюрикен 🧊</div>
+    <div><span class="key">E</span> Ульта</div>
+    <div><span class="key">SHIFT</span> Дэш</div>
+    <div><span class="key">Q</span> Оружие</div>
+    <div><span class="key">TAB</span> Инвентарь</div>
 </div>
 
 <script>
@@ -430,7 +553,26 @@ function playSound(type) {
     }
 }
 
-// --- CANVAS & SETUP ---
+// --- УПРАВЛЕНИЕ РЕЖИМАМИ (ПК / ТЕЛЕФОН) ---
+function setControlMode(mode) {
+    initAudio();
+    document.body.classList.remove('mode-pc', 'mode-mobile');
+    document.body.classList.add(mode === 'PC' ? 'mode-pc' : 'mode-mobile');
+    document.getElementById('start-modal').style.display = 'none';
+}
+
+document.getElementById('btn-choose-pc').addEventListener('click', () => setControlMode('PC'));
+document.getElementById('btn-choose-mobile').addEventListener('click', () => setControlMode('MOBILE'));
+document.getElementById('btn-mode-switch').addEventListener('click', () => {
+    document.getElementById('start-modal').style.display = 'flex';
+});
+
+// Авто-определение при старте
+if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    document.getElementById('btn-choose-mobile').style.borderColor = '#fbbf24';
+}
+
+// --- CANVAS & INPUT ---
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
@@ -471,7 +613,7 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
-// --- ПЛАВАЮЩИЙ СЕНСОРНЫЙ ДЖОЙСТИК (TOUCH JOYSTICK) ---
+// --- ПЛАВАЮЩИЙ СЕНСОРНЫЙ ДЖОЙСТИК ---
 const touchJoystick = {
     active: false,
     startX: 0,
@@ -482,23 +624,18 @@ const touchJoystick = {
 };
 
 const joyArea = document.getElementById('joystick-touch-area');
-const joyBase = document.getElementById('joystick-base');
 const joyStick = document.getElementById('joystick-stick');
 
 function handleJoyStart(e) {
     e.preventDefault();
     initAudio();
     const touch = e.changedTouches[0];
-    const rect = joyArea.getBoundingClientRect();
-    
     touchJoystick.active = true;
     touchJoystick.touchId = touch.identifier;
     touchJoystick.startX = touch.clientX;
     touchJoystick.startY = touch.clientY;
     touchJoystick.x = 0;
     touchJoystick.y = 0;
-
-    // Центрируем джойстик в точке касания
     joyStick.style.transform = `translate(0px, 0px)`;
 }
 
@@ -550,7 +687,6 @@ joyArea.addEventListener('touchmove', handleJoyMove, { passive: false });
 joyArea.addEventListener('touchend', handleJoyEnd, { passive: false });
 joyArea.addEventListener('touchcancel', handleJoyEnd, { passive: false });
 
-// --- ПРИВЯЗКА КНОПОК ДЕЙСТВИЙ ---
 function bindTouch(id, onDown, onUp) {
     const btn = document.getElementById(id);
     if (!btn) return;
@@ -707,7 +843,7 @@ let playerShots = [];
 
 let dialog = {
     speaker: "ПИНГВИН",
-    text: "Используй джойстик слева и кнопки справа! Заморозь Бамбочей сюрикеном ❄️!",
+    text: "Катакомбы Чата! Найди 3 свитка расписания и открой ворота!",
     timer: 260, portrait: 'penguin'
 };
 
@@ -1198,7 +1334,6 @@ function update() {
         if (keys['KeyA'] || keys['ArrowLeft'])  { dx = -1; player.facing = 'left'; }
         if (keys['KeyD'] || keys['ArrowRight']) { dx = 1;  player.facing = 'right'; }
 
-        // Сенсорный джойстик
         if (touchJoystick.active && (touchJoystick.x !== 0 || touchJoystick.y !== 0)) {
             dx = touchJoystick.x;
             dy = touchJoystick.y;
@@ -1542,11 +1677,11 @@ function update() {
     }
 }
 
-// --- RENDER (ЧЁТКИЙ ДВУХСЛОЙНЫЙ ВЫВОД) ---
+// --- RENDER ---
 function draw() {
     ctx.save();
 
-    // СЛОЙ 1: ПИКСЕЛЬНЫЙ МИР (640x448 -> scale 2x)
+    // СЛОЙ 1: ПИКСЕЛЬНЫЙ МИР
     ctx.save();
     ctx.scale(2, 2);
 
@@ -1689,12 +1824,9 @@ function draw() {
         draw16BitPenguin(player);
     }
 
-    ctx.restore(); // Конец пиксельного слоя
+    ctx.restore();
 
-    // ==========================================
-    // СЛОЙ 2: ЧЁТКИЙ UI, ТЕКСТ И ДИАЛОГИ (640x448)
-    // ==========================================
-
+    // СЛОЙ 2: ЧЁТКИЙ UI И ТЕКСТ
     if (currentRoom === 'THRONE' && boss.active && boss.hp > 0) {
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 12px monospace';
@@ -1717,7 +1849,6 @@ function draw() {
         ctx.fillText(ft.text, ft.x * 2, ft.y * 2);
     });
 
-    // Сердечки
     for (let i = 0; i < player.maxHp / 2; i++) {
         const hVal = player.hp - i * 2;
         const hx = 40 + i * 22;
@@ -1730,7 +1861,6 @@ function draw() {
         }
     }
 
-    // Шкала Хайпа
     const isHypeMax = player.hype === player.maxHype;
     ctx.fillStyle = '#0f172a'; ctx.fillRect(40, 34, 100, 10);
     ctx.fillStyle = isHypeMax ? ((Math.floor(Date.now() / 150) % 2 === 0) ? '#fbbf24' : '#f43f5e') : '#a855f7';
@@ -1751,7 +1881,6 @@ function draw() {
     ctx.fillStyle = '#fde68a'; ctx.font = 'bold 13px monospace';
     ctx.fillText(`СВИТКИ: ${player.schedules}/${player.totalSchedules}`, 540, 28);
 
-    // Диалоговое окно
     if (dialog.timer > 0) {
         const dy = 320;
         ctx.fillStyle = 'rgba(15, 23, 42, 0.97)';
