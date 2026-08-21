@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>16-BIT: Пингвин и Расписание (60 FPS Turbo)</title>
+    <title>16-BIT: Пингвин и Расписание (Fixed HD)</title>
     
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -27,14 +27,13 @@
         }
         html, body {
             background: #05070a;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
             position: fixed;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #d1d5db;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
         }
@@ -49,51 +48,60 @@
             background: #0b0e14;
         }
 
+        /* ЭКРАН (С ГАРАНТИЕЙ ОТОБРАЖЕНИЯ НА МОБИЛКАХ) */
         #screen-section {
             position: relative;
             width: 100%;
-            height: 100%;
+            flex: 1 1 auto;
+            min-height: 0; /* Предотвращает схлопывание в 0px на телефонах */
             display: flex;
             justify-content: center;
             align-items: center;
             background: #000;
             overflow: hidden;
+            padding: 4px;
         }
         canvas {
             display: block;
             background-color: #0b0e14;
+            width: auto;
+            height: 100%;
             max-width: 100%;
             max-height: 100%;
+            aspect-ratio: 640 / 448; /* Фиксирует пропорции 16-бит экрана */
             object-fit: contain;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
             touch-action: none;
         }
-        
-        /* Сканирующие полосы отключены на мобилках ради 60 FPS */
         .scanlines {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
-            display: none;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%);
+            background-size: 100% 4px;
         }
 
+        /* ВЕРХНЯЯ ПАНЕЛЬ */
         #top-bar {
             position: absolute;
-            top: 6px;
-            right: 6px;
+            top: 8px;
+            right: 8px;
             display: flex;
             gap: 6px;
-            z-index: 10;
+            z-index: 20;
         }
         .btn-top {
             background: rgba(15, 23, 42, 0.9);
             border: 1px solid #475569;
             color: #fff;
-            padding: 5px 8px;
+            padding: 6px 10px;
             border-radius: 6px;
             font-size: 11px;
             font-weight: bold;
             cursor: pointer;
             touch-action: manipulation;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
         .btn-top:active { background: #38bdf8; color: #000; }
 
@@ -102,7 +110,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 12px;
+            padding: 10px 14px;
             background: #0f1422;
             position: relative;
             border-top: 2px solid #1e293b;
@@ -119,31 +127,33 @@
             touch-action: none;
         }
         #joystick-base {
-            width: 130px;
-            height: 130px;
-            background: #1e293b;
+            width: 136px;
+            height: 136px;
+            background: radial-gradient(circle, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
             border: 2px solid #38bdf8;
             border-radius: 50%;
             position: relative;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
         }
         #joystick-stick {
-            width: 52px;
-            height: 52px;
-            background: #0284c7;
+            width: 54px;
+            height: 54px;
+            background: radial-gradient(circle, #38bdf8, #0284c7);
             border: 2px solid #fff;
             border-radius: 50%;
             position: absolute;
-            top: 39px;
-            left: 39px;
+            top: 41px;
+            left: 41px;
             pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.7);
         }
 
         #actions-touch-area {
             flex: 1 1 55%;
             height: 100%;
             display: grid;
-            grid-template-columns: repeat(3, 58px);
-            grid-template-rows: repeat(2, 58px);
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(2, 60px);
             gap: 10px;
             justify-content: center;
             align-content: center;
@@ -152,35 +162,37 @@
             touch-action: none;
         }
         .touch-btn {
-            width: 58px;
-            height: 58px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             font-weight: bold;
-            font-size: 20px;
+            font-size: 22px;
             color: #fff;
-            border: 2px solid rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 5px 12px rgba(0,0,0,0.7);
             touch-action: none;
             cursor: pointer;
         }
         .touch-btn:active {
-            transform: scale(0.92);
+            transform: scale(0.9);
             filter: brightness(1.3);
         }
         .btn-label {
             font-size: 8px;
             font-weight: 800;
             margin-top: -2px;
+            text-transform: uppercase;
         }
 
-        .btn-atk { background: #d97706; border-color: #fbbf24; grid-column: 2; grid-row: 2; width: 66px; height: 66px; font-size: 24px; }
-        .btn-def { background: #7c3aed; border-color: #a78bfa; grid-column: 1; grid-row: 2; }
-        .btn-ice { background: #0284c7; border-color: #7dd3fc; grid-column: 2; grid-row: 1; }
-        .btn-dash { background: #059669; border-color: #34d399; grid-column: 3; grid-row: 2; }
-        .btn-ult { background: #e11d48; border-color: #fda4af; grid-column: 3; grid-row: 1; }
+        .btn-atk { background: radial-gradient(circle, #f59e0b, #b45309); border-color: #fbbf24; grid-column: 2; grid-row: 2; width: 68px; height: 68px; font-size: 26px; }
+        .btn-def { background: radial-gradient(circle, #8b5cf6, #5b21b6); border-color: #a78bfa; grid-column: 1; grid-row: 2; }
+        .btn-ice { background: radial-gradient(circle, #38bdf8, #0369a1); border-color: #7dd3fc; grid-column: 2; grid-row: 1; }
+        .btn-dash { background: radial-gradient(circle, #10b981, #047857); border-color: #34d399; grid-column: 3; grid-row: 2; }
+        .btn-ult { background: radial-gradient(circle, #f43f5e, #be123c); border-color: #fda4af; grid-column: 3; grid-row: 1; }
 
         .pc-help {
             margin-top: 8px;
@@ -200,33 +212,33 @@
             border: 1px solid #475569;
         }
 
-        /* --- РЕЖИМЫ (ПК / МОБИЛЬНЫЙ) --- */
+        /* --- СТИЛИ ДЛЯ РЕЖИМА ПК --- */
         body.mode-pc #gamepad-section { display: none !important; }
         body.mode-pc #console-wrapper {
-            max-width: 820px;
-            max-height: 580px;
+            max-width: 840px;
+            max-height: 600px;
             height: auto;
             border-radius: 12px;
             border: 2px solid #374151;
-            padding: 6px;
-            background: #0f1422;
+            padding: 8px;
+            background: linear-gradient(145deg, #1b202e, #0c0e14);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 35px rgba(56, 189, 248, 0.2);
         }
         body.mode-pc #screen-section {
-            height: 540px;
+            height: 560px;
             width: 800px;
-        }
-        body.mode-pc .scanlines {
-            display: block; /* На ПК можно оставить сканирующие полосы */
+            border-radius: 6px;
         }
         body.mode-pc .pc-help { display: flex; }
 
+        /* --- СТИЛИ ДЛЯ РЕЖИМА ТЕЛЕФОНА --- */
         body.mode-mobile #console-wrapper {
             width: 100%;
             height: 100%;
             max-width: 500px;
         }
-        body.mode-mobile #screen-section { flex: 1 1 54%; }
-        body.mode-mobile #gamepad-section { flex: 1 1 46%; display: flex; }
+        body.mode-mobile #screen-section { flex: 1 1 52%; }
+        body.mode-mobile #gamepad-section { flex: 1 1 48%; display: flex; }
         body.mode-mobile .pc-help { display: none !important; }
     </style>
 </head>
@@ -238,13 +250,14 @@
         <div class="scanlines"></div>
 
         <div id="top-bar">
-            <button class="btn-top" id="btn-mode-toggle">📱/💻 РЕЖИМ</button>
+            <button class="btn-top" id="btn-mode-toggle">🖥️ ПК / 📱 ТЕЛ</button>
             <button class="btn-top" id="btn-inv">🎒 ИНВЕНТАРЬ</button>
             <button class="btn-top" id="btn-swap">🔄 СМЕНА</button>
             <button class="btn-top" id="btn-restart">🔁 R</button>
         </div>
     </div>
 
+    <!-- СЕНСОРНЫЙ ГЕЙМПАД -->
     <div id="gamepad-section">
         <div id="joystick-touch-area">
             <div id="joystick-base">
@@ -273,7 +286,30 @@
 </div>
 
 <script>
-// --- 16-BIT AUDIO ENGINE (ОПТИМИЗИРОВАН) ---
+// --- ТОЧНОЕ ОПРЕДЕЛЕНИЕ ПЛАТФОРМЫ (ПК ИЛИ ТЕЛЕФОН) ---
+function detectPlatform() {
+    // Проверяем наличие мыши и hover (ПК)
+    const isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const isMobileWidth = window.innerWidth < 640;
+    
+    if (isDesktop && !isMobileWidth) {
+        document.body.className = 'mode-pc';
+    } else {
+        document.body.className = 'mode-mobile';
+    }
+}
+detectPlatform();
+
+function toggleMode() {
+    if (document.body.classList.contains('mode-pc')) {
+        document.body.className = 'mode-mobile';
+    } else {
+        document.body.className = 'mode-pc';
+    }
+}
+document.getElementById('btn-mode-toggle').addEventListener('click', toggleMode);
+
+// --- 16-BIT AUDIO ENGINE ---
 let actx = null;
 let bgmTimer = null;
 let bgmStep = 0;
@@ -355,7 +391,7 @@ function playSound(type) {
             const osc = actx.createOscillator(); const gain = actx.createGain();
             osc.type = 'sawtooth'; osc.frequency.setValueAtTime(360, t);
             osc.frequency.exponentialRampToValueAtTime(70, t + 0.1);
-            gain.gain.setValueAtTime(0.2, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.1);
+            gain.gain.setValueAtTime(0.25, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.1);
             osc.connect(gain); gain.connect(actx.destination);
             osc.start(t); osc.stop(t + 0.1);
         } else if (type === 'frost_shuriken') {
@@ -366,11 +402,14 @@ function playSound(type) {
             osc.connect(gain); gain.connect(actx.destination);
             osc.start(t); osc.stop(t + 0.15);
         } else if (type === 'freeze') {
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'sine'; osc.frequency.setValueAtTime(1200, t);
-            gain.gain.setValueAtTime(0.18, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.1);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.1);
+            [1046, 1318].forEach((f, i) => {
+                const osc = actx.createOscillator(); const gain = actx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(f, t + i * 0.04);
+                gain.gain.setValueAtTime(0.15, t + i * 0.04);
+                gain.gain.linearRampToValueAtTime(0.01, t + (i + 1) * 0.06);
+                osc.connect(gain); gain.connect(actx.destination);
+                osc.start(t + i * 0.04); osc.stop(t + (i + 1) * 0.06);
+            });
         } else if (type === 'parry') {
             const osc1 = actx.createOscillator(); const gain1 = actx.createGain();
             osc1.type = 'square'; osc1.frequency.setValueAtTime(987, t);
@@ -411,7 +450,8 @@ function playSound(type) {
         } else if (type === 'coin' || type === 'potion') {
             const osc = actx.createOscillator(); const gain = actx.createGain();
             osc.type = 'sine'; osc.frequency.setValueAtTime(1000, t);
-            gain.gain.setValueAtTime(0.15, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+            gain.gain.setValueAtTime(0.15, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
             osc.connect(gain); gain.connect(actx.destination);
             osc.start(t); osc.stop(t + 0.08);
         } else if (type === 'golden_beam') {
@@ -421,11 +461,14 @@ function playSound(type) {
             osc.connect(gain); gain.connect(actx.destination);
             osc.start(t); osc.stop(t + 0.12);
         } else if (type === 'fanfare') {
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'square'; osc.frequency.setValueAtTime(659, t);
-            gain.gain.setValueAtTime(0.25, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.3);
+            [440, 659, 880].forEach((f, i) => {
+                const osc = actx.createOscillator(); const gain = actx.createGain();
+                osc.type = 'square'; osc.frequency.setValueAtTime(f, t + i * 0.1);
+                gain.gain.setValueAtTime(0.2, t + i * 0.1);
+                gain.gain.linearRampToValueAtTime(0.01, t + (i + 1) * 0.1);
+                osc.connect(gain); gain.connect(actx.destination);
+                osc.start(t + i * 0.1); osc.stop(t + (i + 1) * 0.1);
+            });
         } else if (type === 'hit') {
             const osc = actx.createOscillator(); const gain = actx.createGain();
             osc.type = 'square'; osc.frequency.setValueAtTime(130, t);
@@ -433,75 +476,22 @@ function playSound(type) {
             osc.connect(gain); gain.connect(actx.destination);
             osc.start(t); osc.stop(t + 0.08);
         } else if (type === 'item') {
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(659, t);
-            gain.gain.setValueAtTime(0.2, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.1);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.1);
+            [523, 783].forEach((f, i) => {
+                const osc = actx.createOscillator(); const gain = actx.createGain();
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(f, t + i * 0.06);
+                gain.gain.setValueAtTime(0.2, t + i * 0.06);
+                gain.gain.linearRampToValueAtTime(0.01, t + (i + 1) * 0.06);
+                osc.connect(gain); gain.connect(actx.destination);
+                osc.start(t + i * 0.06); osc.stop(t + (i + 1) * 0.06);
+            });
         }
     } catch(err) {}
 }
 
-// --- ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА ---
-function toggleMode() {
-    if (document.body.classList.contains('mode-pc')) {
-        document.body.classList.remove('mode-pc');
-        document.body.classList.add('mode-mobile');
-    } else {
-        document.body.classList.remove('mode-mobile');
-        document.body.classList.add('mode-pc');
-    }
-}
-document.getElementById('btn-mode-toggle').addEventListener('click', toggleMode);
-
-if ('ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth < 768) {
-    document.body.classList.remove('mode-pc');
-    document.body.classList.add('mode-mobile');
-}
-
-// --- CANVAS & ДВУХСЛОЙНЫЙ РЕНДЕР С КЭШИРОВАНИЕМ ---
+// --- CANVAS & INPUT ---
 const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d', { alpha: false }); // alpha: false дает прирост 15-20% FPS на мобилках!
+const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
-
-// ПРЕДВАРИТЕЛЬНО ОТРИСОВАННЫЕ ФОНЫ (OFFSCREEN CANVASES)
-const bgCatacombs = document.createElement('canvas');
-bgCatacombs.width = 320; bgCatacombs.height = 224;
-const bgCtx1 = bgCatacombs.getContext('2d');
-bgCtx1.fillStyle = '#0a0d16'; bgCtx1.fillRect(0, 0, 320, 224);
-for (let y = 24; y < 196; y += 24) {
-    for (let x = 16; x < 304; x += 24) {
-        bgCtx1.fillStyle = '#161b29'; bgCtx1.fillRect(x, y, 23, 23);
-        bgCtx1.fillStyle = '#262f45'; bgCtx1.fillRect(x, y, 23, 1); bgCtx1.fillRect(x, y, 1, 23);
-    }
-}
-bgCtx1.fillStyle = '#06080e';
-bgCtx1.fillRect(0, 0, 320, 24); bgCtx1.fillRect(0, 196, 320, 28);
-bgCtx1.fillRect(0, 0, 16, 224); bgCtx1.fillRect(304, 0, 16, 224);
-bgCtx1.strokeStyle = '#334155'; bgCtx1.strokeRect(15, 23, 290, 174);
-
-const bgThrone = document.createElement('canvas');
-bgThrone.width = 320; bgThrone.height = 224;
-const bgCtx2 = bgThrone.getContext('2d');
-bgCtx2.fillStyle = '#140810'; bgCtx2.fillRect(0, 0, 320, 224);
-for (let y = 24; y < 196; y += 24) {
-    for (let x = 16; x < 304; x += 24) {
-        bgCtx2.fillStyle = '#24101e'; bgCtx2.fillRect(x, y, 23, 23);
-        bgCtx2.fillStyle = '#4a1d37'; bgCtx2.fillRect(x, y, 23, 1); bgCtx2.fillRect(x, y, 1, 23);
-    }
-}
-bgCtx2.fillStyle = '#881337'; bgCtx2.fillRect(130, 24, 60, 172);
-bgCtx2.fillStyle = '#be123c'; bgCtx2.fillRect(134, 24, 52, 172);
-bgCtx2.fillStyle = '#fbbf24'; bgCtx2.fillRect(130, 24, 2, 172); bgCtx2.fillRect(188, 24, 2, 172);
-bgCtx2.fillStyle = '#0f172a'; bgCtx2.fillRect(136, 10, 48, 26);
-bgCtx2.fillStyle = '#1e3a29'; bgCtx2.fillRect(140, 12, 40, 22);
-bgCtx2.fillStyle = '#fbbf24'; bgCtx2.fillRect(148, 14, 24, 4);
-bgCtx2.fillStyle = '#107c10'; bgCtx2.fillRect(36, 26, 16, 32); bgCtx2.fillRect(268, 26, 16, 32);
-bgCtx2.fillStyle = '#050204'; bgCtx2.fillRect(0, 0, 320, 24); bgCtx2.fillRect(0, 196, 320, 28);
-bgCtx2.fillRect(0, 0, 16, 224); bgCtx2.fillRect(304, 0, 16, 224);
-bgCtx2.strokeStyle = '#991b1b'; bgCtx2.strokeRect(15, 23, 290, 174);
-bgCtx2.fillStyle = '#1e293b'; bgCtx2.fillRect(136, 196, 48, 16);
-bgCtx2.fillStyle = '#ef4444'; bgCtx2.fillRect(158, 202, 4, 4);
 
 const keys = {};
 let inventoryOpen = false;
@@ -571,6 +561,7 @@ function handleJoyStart(e) {
 function handleJoyMove(e) {
     e.preventDefault();
     if (!touchJoystick.active) return;
+
     for (let i = 0; i < e.changedTouches.length; i++) {
         const touch = e.changedTouches[i];
         if (touch.identifier === touchJoystick.touchId) {
@@ -578,10 +569,13 @@ function handleJoyMove(e) {
             const dy = touch.clientY - touchJoystick.startY;
             const dist = Math.hypot(dx, dy);
             const maxRadius = 45;
+
             let normX = dx / (dist || 1);
             let normY = dy / (dist || 1);
             let clamped = Math.min(dist, maxRadius);
+
             joyStick.style.transform = `translate(${normX * clamped}px, ${normY * clamped}px)`;
+
             if (dist > 6) {
                 touchJoystick.x = normX * (clamped / maxRadius);
                 touchJoystick.y = normY * (clamped / maxRadius);
@@ -798,7 +792,7 @@ let streamChat = [
     { user: "MitraE1", text: "Пингвин соло развалил Генерала 1:6! KEKW", color: '#38bdf8' },
     { user: "p0p0vich", text: "ДОНАТ 1000₽: На победу Эвертона и стрим Фаворита!", color: '#4ade80' },
     { user: "elistratov_11", text: "Футболка Эвертона сидит идеально 💙", color: '#60a5fa' },
-    { user: "baby_zahes", text: "Колянчик повержен, расписание спасено!", color: '#f43f5e' }
+    { user: "baby_zahes", text: "Колянчик повержен, расписание спасено!", color: '#f472b6' }
 ];
 
 const chatPool = [
@@ -1010,7 +1004,7 @@ function spawnSparks(x, y, color, count = 4) {
     }
 }
 
-// --- RENDER HELPERS ---
+// --- RENDER HELPERS (ОБЪЁМНЫЙ 16-BIT АРТ) ---
 function drawShadow(x, y, w, h) {
     ctx.fillStyle = 'rgba(5, 7, 13, 0.45)';
     ctx.beginPath();
@@ -1102,6 +1096,7 @@ function draw16BitPenguin(p) {
     if (p.armor === 'armored_scarf') {
         ctx.fillStyle = '#475569'; ctx.fillRect(px + 3, py + 5 + bounce, 10, 3);
         ctx.fillStyle = '#94a3b8'; ctx.fillRect(px + 4, py + 5 + bounce, 8, 2);
+        ctx.fillStyle = '#f8fafc'; ctx.fillRect(px + 6, py + 5 + bounce, 2, 1);
     } else {
         ctx.fillStyle = '#9f1239'; ctx.fillRect(px + 3, py + 5 + bounce, 10, 3);
         ctx.fillStyle = '#e11d48'; ctx.fillRect(px + 4, py + 5 + bounce, 8, 2);
@@ -1109,12 +1104,12 @@ function draw16BitPenguin(p) {
 
     ctx.fillStyle = '#0f172a';
     if (p.facing === 'left') {
-        ctx.fillRect(px + 3, py + 3 + bounce, 2, 3); ctx.fillStyle = '#fff'; ctx.fillRect(px + 3, py + 3, 1, 1);
+        ctx.fillRect(px + 3, py + 3 + bounce, 2, 3); ctx.fillStyle = '#fff'; ctx.fillRect(px + 3, py + 3 + bounce, 1, 1);
     } else if (p.facing === 'right') {
-        ctx.fillRect(px + 11, py + 3 + bounce, 2, 3); ctx.fillStyle = '#fff'; ctx.fillRect(px + 12, py + 3, 1, 1);
+        ctx.fillRect(px + 11, py + 3 + bounce, 2, 3); ctx.fillStyle = '#fff'; ctx.fillRect(px + 12, py + 3 + bounce, 1, 1);
     } else {
         ctx.fillRect(px + 4, py + 3 + bounce, 2, 3); ctx.fillRect(px + 10, py + 3 + bounce, 2, 3);
-        ctx.fillStyle = '#fff'; ctx.fillRect(px + 4, py + 3, 1, 1); ctx.fillRect(px + 10, py + 3, 1, 1);
+        ctx.fillStyle = '#fff'; ctx.fillRect(px + 4, py + 3 + bounce, 1, 1); ctx.fillRect(px + 10, py + 3 + bounce, 1, 1);
     }
 
     ctx.fillStyle = '#d97706'; ctx.fillRect(px + 6, py + 5 + bounce, 4, 3);
@@ -1166,6 +1161,7 @@ function draw16BitBoss(b) {
     ctx.fillStyle = b.isRage ? '#fca5a5' : '#fbcfe8';
     ctx.fillRect(bx + 6, by + 10, 16, 9);
     ctx.fillStyle = '#111'; ctx.fillRect(bx + 8, by + 12, 3, 2); ctx.fillRect(bx + 17, by + 12, 3, 2);
+    ctx.fillStyle = '#881337'; ctx.fillRect(bx + 12, by + 16, 4, 1);
 
     ctx.fillStyle = b.isRage ? '#991b1b' : '#14532d';
     ctx.fillRect(bx + 4, by + 19, 20, 11);
@@ -1212,524 +1208,12 @@ function draw16BitFavoritStreamer(x, y) {
     ctx.fillStyle = '#003399'; ctx.fillRect(x + 4, y + 32, 40, 36);
     ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 18, y + 32, 12, 6);
     ctx.fillStyle = '#003399'; ctx.fillRect(x + 22, y + 32, 4, 4);
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 10, y + 40, 6, 6); // Эмблема
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 10, y + 40, 6, 6);
 
     // Микрофон
     ctx.fillStyle = '#475569'; ctx.fillRect(x + 28, y + 38, 10, 16);
     ctx.fillStyle = '#94a3b8'; ctx.fillRect(x + 30, y + 36, 6, 8);
     ctx.fillStyle = '#1e293b'; ctx.fillRect(x + 32, y + 54, 2, 14);
-}
-
-// --- UPDATE LOOP ---
-function update() {
-    if (gameState === 'VICTORY') {
-        streamChatTimer++;
-        if (streamChatTimer > 45) {
-            streamChatTimer = 0;
-            const randomMsg = chatPool[Math.floor(Math.random() * chatPool.length)];
-            streamChat.push(randomMsg);
-            if (streamChat.length > 7) streamChat.shift();
-        }
-
-        for (let i = streamReactionParticles.length - 1; i >= 0; i--) {
-            const p = streamReactionParticles[i];
-            p.y += p.vy; p.x += p.vx; p.life--;
-            if (p.life <= 0) streamReactionParticles.splice(i, 1);
-        }
-        return;
-    }
-
-    if (transition.active) {
-        if (transition.state === 'in') {
-            transition.alpha += 0.08;
-            if (transition.alpha >= 1) {
-                transition.alpha = 1;
-                transition.state = 'out';
-                currentRoom = transition.targetRoom;
-
-                if (currentRoom === 'THRONE') {
-                    player.x = 152; player.y = 190; player.facing = 'up';
-                    boss.active = true; throneDoorLocked = true;
-                    minions = []; spawnPortals = []; spawnTimer = 60;
-                    playSound('door_slam');
-                    dialog = {
-                        speaker: "ГЕНЕРАЛ 1:6",
-                        text: "ТЫ ПОСМЕЛ ВОЙТИ В МОЙ ТРОННЫЙ ЗАЛ?! БАМБОЧИ, УНИЧТОЖИТЬ ЕГО!",
-                        timer: 280, portrait: 'boss'
-                    };
-                }
-            }
-        } else {
-            transition.alpha -= 0.08;
-            if (transition.alpha <= 0) {
-                transition.alpha = 0;
-                transition.active = false;
-            }
-        }
-        return;
-    }
-
-    if (inventoryOpen) return;
-    if (dialog.timer > 0) dialog.timer--;
-    if (screenShake > 0) screenShake *= 0.86;
-
-    torchTimer++;
-    if (torchTimer > 6) { torchFrame = (torchFrame + 1) % 3; torchTimer = 0; }
-
-    if (keys['Enter']) dialog.timer = 0;
-    if (player.hp <= 0) { gameState = 'GAMEOVER'; return; }
-
-    if (player.invul > 0) player.invul--;
-    if (player.holdTimer > 0) { player.holdTimer--; return; }
-
-    if (boss.active && boss.hp <= 0) {
-        triggerVictory();
-        return;
-    }
-
-    const aliveBambochi = minions.length;
-    const maxAllowed = (currentRoom === 'THRONE') ? MAX_BAMBOCHI_THRONE : MAX_BAMBOCHI_CATACOMBS;
-
-    if (aliveBambochi < maxAllowed && spawnPortals.length === 0) {
-        spawnTimer--;
-        if (spawnTimer <= 0) {
-            spawnTimer = (currentRoom === 'THRONE') ? 180 : 220;
-            if (currentRoom === 'THRONE') {
-                const sideX = Math.random() > 0.5 ? ((Math.random() * 50 + 40) | 0) : ((Math.random() * 50 + 230) | 0);
-                const sideY = (Math.random() * 80 + 70) | 0;
-                spawnBambochPortal(sideX, sideY);
-            } else {
-                spawnBambochPortal();
-            }
-        }
-    }
-
-    if (currentRoom === 'CATACOMBS') {
-        if (player.y <= 30 && player.x >= 135 && player.x <= 170) {
-            if (gateOpened) {
-                startRoomTransition('THRONE');
-                return;
-            } else {
-                if (dialog.timer === 0) {
-                    dialog = {
-                        speaker: "ВОРОТА ТРОНА",
-                        text: `Заперто на 3 печати! Собрано свитков: ${player.schedules}/3`,
-                        timer: 120, portrait: 'penguin'
-                    };
-                }
-            }
-        }
-    }
-
-    for (let i = spawnPortals.length - 1; i >= 0; i--) {
-        const portal = spawnPortals[i];
-        portal.timer--;
-        if (portal.timer <= 0) {
-            minions.push({
-                x: portal.x, y: portal.y, hp: 3, maxHp: 3,
-                speed: 0.65, dirX: (Math.random() > 0.5 ? 1 : -1), dirY: 0,
-                timer: 30, invul: 0, freezeTimer: 0, dead: false, name: 'Бамбоч'
-            });
-            spawnSparks(portal.x + 7, portal.y + 7, '#7c3aed', 6);
-            addFloatingText(portal.x, portal.y - 6, "БАМБОЧ!", '#c084fc');
-            spawnPortals.splice(i, 1);
-        }
-    }
-
-    if (player.sp < player.maxSp && !player.isShielding) player.sp += 0.5;
-
-    if (player.isShielding) {
-        player.sp = Math.max(0, player.sp - 0.2);
-        if (player.parryWindow > 0) player.parryWindow--;
-        if (player.sp <= 0) {
-            player.isShielding = false;
-            playSound('block');
-        }
-    }
-
-    if ((keys['ShiftLeft'] || keys['ShiftRight']) && !player.isSliding && player.sp >= 20 && !player.isShielding) {
-        triggerDash();
-    }
-
-    if (player.isSliding) {
-        player.slideTimer--;
-        player.x += player.slideDir.x * 3.6;
-        player.y += player.slideDir.y * 3.6;
-        if (player.slideTimer <= 0) player.isSliding = false;
-    } else {
-        let dx = 0, dy = 0;
-        if (keys['KeyW'] || keys['ArrowUp'])    { dy = -1; player.facing = 'up'; }
-        if (keys['KeyS'] || keys['ArrowDown'])  { dy = 1;  player.facing = 'down'; }
-        if (keys['KeyA'] || keys['ArrowLeft'])  { dx = -1; player.facing = 'left'; }
-        if (keys['KeyD'] || keys['ArrowRight']) { dx = 1;  player.facing = 'right'; }
-
-        if (touchJoystick.active && (touchJoystick.x !== 0 || touchJoystick.y !== 0)) {
-            dx = touchJoystick.x; dy = touchJoystick.y;
-            if (Math.abs(dx) > Math.abs(dy)) {
-                player.facing = dx > 0 ? 'right' : 'left';
-            } else {
-                player.facing = dy > 0 ? 'down' : 'up';
-            }
-        }
-
-        if (dx !== 0 || dy !== 0) {
-            player.walkTimer++;
-            if (player.walkTimer > 7) { player.walkFrame = (player.walkFrame + 1) % 2; player.walkTimer = 0; }
-            if (!touchJoystick.active && dx !== 0 && dy !== 0) { dx *= 0.7071; dy *= 0.7071; }
-            const currentSpeed = player.isShielding ? player.speed * 0.5 : player.speed;
-            player.x += dx * currentSpeed;
-            player.y += dy * currentSpeed;
-        } else {
-            player.walkFrame = 0;
-        }
-    }
-
-    player.x = Math.max(18, Math.min(302 - player.w, player.x));
-    player.y = Math.max(26, Math.min(194 - player.h, player.y));
-
-    if (player.attackTimer > 0) {
-        player.attackTimer--;
-        if (player.attackTimer <= 6) player.isAttacking = false;
-    }
-
-    let slashBox = null;
-    if (player.isAttacking || player.isSliding) {
-        const dist = player.isSliding ? 20 : 18;
-        if (player.facing === 'right') slashBox = { x: player.x + 8, y: player.y - 6, w: dist, h: player.h + 12 };
-        if (player.facing === 'left')  slashBox = { x: player.x - dist + 4, y: player.y - 6, w: dist, h: player.h + 12 };
-        if (player.facing === 'up')    slashBox = { x: player.x - 6, y: player.y - dist + 4, w: player.w + 12, h: dist };
-        if (player.facing === 'down')  slashBox = { x: player.x - 6, y: player.y + 8, w: player.w + 12, h: dist };
-    }
-
-    if (currentRoom === 'CATACOMBS') {
-        chests.forEach(c => {
-            if (!c.opened && slashBox) {
-                if (slashBox.x < c.x + 16 && slashBox.x + slashBox.w > c.x &&
-                    slashBox.y < c.y + 14 && slashBox.y + slashBox.h > c.y) {
-                    c.opened = true;
-                    player.holdingItem = c.item;
-                    player.holdTimer = 60;
-                    playSound('fanfare');
-                    spawnSparks(c.x + 8, c.y + 7, '#fbbf24', 8);
-
-                    if (c.item === 'golden_fish') {
-                        player.hasGoldenFish = true; player.weapon = 'golden_fish';
-                        dialog = { speaker: "НАХОДКА!", text: "Получена ЗОЛОТАЯ РЫБА! Двойной урон и волны при полном HP!", timer: 300, portrait: 'penguin' };
-                    } else if (c.item === 'armored_scarf') {
-                        player.hasArmoredScarf = true; player.armor = 'armored_scarf';
-                        player.maxHp = 8; player.hp = player.maxHp;
-                        dialog = { speaker: "НАХОДКА!", text: "Экипирован БРОНИРОВАННЫЙ ШАРФ! +2 Макс. HP и защита от урона!", timer: 300, portrait: 'penguin' };
-                    }
-                }
-            }
-        });
-
-        scrolls.forEach((s) => {
-            if (!s.collected && Math.hypot(player.x + 8 - (s.x + 6), player.y + 9 - (s.y + 5)) < 16) {
-                s.collected = true;
-                player.schedules++;
-                addHype(35);
-                playSound('item');
-                spawnSparks(s.x + 6, s.y + 5, '#fde68a', 8);
-
-                if (player.schedules === 1) dialog = { speaker: "РАСПИСАНИЕ 1/3", text: "'...Вторник: Фаворит запускает стрим в 19:00...'", timer: 240, portrait: 'penguin' };
-                else if (player.schedules === 2) dialog = { speaker: "РАСПИСАНИЕ 2/3", text: "'...Пятница: Кооп-битва с генералами...'", timer: 240, portrait: 'penguin' };
-                else if (player.schedules === 3) {
-                    gateOpened = true;
-                    screenShake = 10;
-                    playSound('door_unlock');
-                    dialog = { speaker: "ВРАТА ОТКРЫТЫ!", text: "Все 3 свитка собраны! Северные ворота в Тронный Зал распахнулись!", timer: 320, portrait: 'penguin' };
-                }
-            }
-        });
-    }
-
-    // СБОР ЗЕЛИЙ
-    for (let i = drops.length - 1; i >= 0; i--) {
-        const d = drops[i];
-        d.life--;
-        if (Math.hypot(player.x + 8 - (d.x + 4), player.y + 9 - (d.y + 4)) < 14) {
-            playSound('potion');
-            if (d.type === 'potion_hp') {
-                player.hp = Math.min(player.maxHp, player.hp + 2);
-                addFloatingText(player.x, player.y - 8, "+2 HP! ❤️", '#ef4444');
-            } else if (d.type === 'potion_sp') {
-                player.sp = Math.min(player.maxSp, player.sp + 50);
-                addFloatingText(player.x, player.y - 8, "+50 SP! ⚡", '#38bdf8');
-            } else if (d.type === 'star_hype') {
-                addHype(25);
-                addFloatingText(player.x, player.y - 8, "+HYPE! ⭐", '#fbbf24');
-            }
-            drops.splice(i, 1);
-            continue;
-        }
-        if (d.life <= 0) drops.splice(i, 1);
-    }
-
-    // СНАРЯДЫ ИГРОКА
-    for (let i = playerShots.length - 1; i >= 0; i--) {
-        const ps = playerShots[i];
-        ps.x += ps.vx; ps.y += ps.vy;
-        ps.life--; ps.rot += 0.25;
-
-        minions.forEach(m => {
-            if (m.hp > 0 && !m.dead && Math.hypot(ps.x - (m.x + 7), ps.y - (m.y + 7)) < 12) {
-                const dmg = (ps.type === 'golden_wave') ? 3 : 2;
-                m.hp -= dmg; m.invul = 15;
-
-                if (ps.type === 'frost_shuriken') {
-                    m.freezeTimer = 90;
-                    playSound('freeze');
-                    addFloatingText(m.x, m.y - 4, `FROZEN! -${dmg}`, '#38bdf8');
-                } else {
-                    playSound('hit');
-                    addFloatingText(m.x, m.y - 4, `-${dmg}`, '#fbbf24');
-                }
-
-                if (m.hp <= 0 && !m.dead) {
-                    m.dead = true;
-                    tryDropPotion(m.x, m.y);
-                }
-                addHype(12);
-                ps.life = 0;
-            }
-        });
-
-        if (currentRoom === 'THRONE' && boss.active && boss.hp > 0 && boss.invul === 0) {
-            if (ps.x > boss.x && ps.x < boss.x + boss.w && ps.y > boss.y && ps.y < boss.y + boss.h) {
-                const dmg = (ps.type === 'golden_wave') ? 3 : 2;
-                boss.hp -= dmg; boss.invul = 15; boss.hitStun = 10;
-                addHype(15);
-                playSound(ps.type === 'frost_shuriken' ? 'freeze' : 'hit');
-                addFloatingText(boss.x + 8, boss.y - 6, `RANGED -${dmg}!`, '#38bdf8');
-                ps.life = 0;
-
-                if (boss.hp <= 0) {
-                    triggerVictory();
-                    return;
-                }
-            }
-        }
-
-        if (ps.life <= 0 || ps.x < 10 || ps.x > 310 || ps.y < 20 || ps.y > 210) {
-            playerShots.splice(i, 1);
-        }
-    }
-
-    // УЛЬТА
-    for (let i = ultProjectiles.length - 1; i >= 0; i--) {
-        const up = ultProjectiles[i];
-        up.y += up.vy; up.life--;
-
-        if (up.y > 40) {
-            if (Math.random() < 0.15) playSound('coin');
-
-            minions.forEach(m => {
-                if (m.hp > 0 && !m.dead && Math.hypot(up.x - (m.x + 7), up.y - (m.y + 7)) < 16) {
-                    m.hp -= 2; m.invul = 15;
-                    if (m.hp <= 0 && !m.dead) {
-                        m.dead = true;
-                        tryDropPotion(m.x, m.y);
-                    }
-                }
-            });
-
-            if (currentRoom === 'THRONE' && boss.active && boss.hp > 0 && boss.invul === 0) {
-                if (up.x > boss.x && up.x < boss.x + boss.w && up.y > boss.y && up.y < boss.y + boss.h) {
-                    const ultDmg = up.type === 'giant_fish' ? 6 : 2;
-                    boss.hp -= ultDmg; boss.invul = 15; boss.hitStun = 15;
-                    screenShake = 8; playSound('hit');
-                    addFloatingText(boss.x + 8, boss.y - 6, `ULT -${ultDmg}!`, '#f43f5e');
-
-                    if (boss.hp <= 0) {
-                        triggerVictory();
-                        return;
-                    }
-                }
-            }
-        }
-
-        if (up.y > 220 || up.life <= 0) {
-            ultProjectiles.splice(i, 1);
-        }
-    }
-
-    const baseDamage = (player.weapon === 'golden_fish') ? 2 : 1;
-
-    // БАМБОЧИ
-    for (let i = minions.length - 1; i >= 0; i--) {
-        const m = minions[i];
-        if (m.dead || m.hp <= 0) {
-            minions.splice(i, 1);
-            continue;
-        }
-
-        if (m.invul > 0) m.invul--;
-        if (m.freezeTimer > 0) {
-            m.freezeTimer--;
-            continue;
-        }
-
-        m.timer--;
-        if (m.timer <= 0) {
-            m.timer = 50 + Math.random() * 30;
-            const angle = Math.atan2(player.y - m.y, player.x - m.x);
-            m.dirX = Math.cos(angle); m.dirY = Math.sin(angle);
-        }
-        m.x += m.dirX * m.speed; m.y += m.dirY * m.speed;
-
-        if (player.invul === 0 && Math.hypot(player.x + 8 - (m.x + 7), player.y + 9 - (m.y + 7)) < 12) {
-            if (player.isShielding) {
-                playSound('block'); player.sp -= 15;
-                m.x -= m.dirX * 16; m.y -= m.dirY * 16;
-                addFloatingText(player.x, player.y - 6, "BLOCKED!", '#38bdf8');
-            } else {
-                player.hp--; player.invul = player.armor === 'armored_scarf' ? 60 : 45;
-                screenShake = 5; playSound('hit');
-                addFloatingText(player.x, player.y - 6, "-1 HP", '#ef4444');
-            }
-        }
-
-        if (slashBox && m.invul === 0) {
-            if (slashBox.x < m.x + 14 && slashBox.x + slashBox.w > m.x &&
-                slashBox.y < m.y + 14 && slashBox.y + slashBox.h > m.y) {
-                m.hp -= baseDamage; m.invul = 15; addHype(12);
-                playSound('hit');
-                addFloatingText(m.x, m.y - 4, `БАМБОЧ -${baseDamage}`, '#fbbf24');
-                m.x -= m.dirX * 14; m.y -= m.dirY * 14;
-
-                if (m.hp <= 0 && !m.dead) {
-                    m.dead = true;
-                    tryDropPotion(m.x, m.y);
-                }
-            }
-        }
-    }
-
-    // БОСС
-    if (currentRoom === 'THRONE' && boss.active && boss.hp > 0) {
-        if (boss.invul > 0) boss.invul--;
-
-        if (boss.hp <= boss.maxHp / 2 && !boss.isRage) {
-            boss.isRage = true; boss.baseSpeed = 1.0;
-            screenShake = 10; playSound('door_slam');
-            spawnBambochPortal(60, 100); spawnBambochPortal(240, 100);
-            tryDropPotion(160, 120, 'potion_hp');
-            dialog = {
-                speaker: "ГЕНЕРАЛ 1:6",
-                text: "БАМБОЧИ, НА ПОМОЩЬ! КРАСНОЕ КОЛЬЦО СМЕРТИ АКТИВИРОВАНО!",
-                timer: 220, portrait: 'boss'
-            };
-        }
-
-        if (boss.hitStun > 0) {
-            boss.hitStun--;
-        } else {
-            if (boss.state === 'PATROL') {
-                boss.x += boss.baseSpeed * boss.dir;
-                if (boss.x > 260) boss.dir = -1;
-                if (boss.x < 32)  boss.dir = 1;
-                boss.shootTimer--;
-                if (boss.shootTimer <= 0) boss.state = 'SHOOT';
-            } else if (boss.state === 'SHOOT') {
-                const btnTypes = [
-                    { char: 'A', color: '#22c55e' }, { char: 'B', color: '#ef4444' },
-                    { char: 'X', color: '#38bdf8' }, { char: 'Y', color: '#eab308' }
-                ];
-                const btn = btnTypes[Math.floor(Math.random() * btnTypes.length)];
-                const angle = Math.atan2(player.y + 9 - (boss.y + 24), player.x + 8 - (boss.x + 14));
-
-                projectiles.push({
-                    x: boss.x + 14, y: boss.y + 24,
-                    vx: Math.cos(angle) * 2.2, vy: Math.sin(angle) * 2.2,
-                    btn: btn.char, color: btn.color, life: 140, reflected: false
-                });
-
-                boss.state = 'OVERHEAT';
-                boss.overheatTimer = boss.isRage ? 45 : 75;
-            } else if (boss.state === 'OVERHEAT') {
-                boss.overheatTimer--;
-                if (boss.overheatTimer <= 0) {
-                    boss.state = 'PATROL';
-                    boss.shootTimer = boss.isRage ? 40 : 65;
-                }
-            }
-        }
-
-        if (slashBox && boss.invul === 0) {
-            if (slashBox.x < boss.x + boss.w && slashBox.x + slashBox.w > boss.x &&
-                slashBox.y < boss.y + boss.h && slashBox.y + slashBox.h > boss.y) {
-                const totalDmg = player.isSliding ? (baseDamage + 2) : baseDamage;
-                boss.hp -= totalDmg; boss.invul = 20; boss.hitStun = 12;
-                addHype(18); screenShake = 6; playSound('hit');
-                addFloatingText(boss.x + 8, boss.y - 6, `-${totalDmg} CRIT!`, '#fbbf24');
-
-                if (boss.hp <= 0) {
-                    triggerVictory();
-                    return;
-                }
-            }
-        }
-    }
-
-    for (let i = projectiles.length - 1; i >= 0; i--) {
-        const pr = projectiles[i];
-        pr.x += pr.vx; pr.y += pr.vy; pr.life--;
-
-        if (pr.reflected) {
-            if (currentRoom === 'THRONE' && boss.active && boss.hp > 0 && boss.invul === 0) {
-                if (Math.hypot(pr.x - (boss.x + 14), pr.y - (boss.y + 16)) < 16) {
-                    boss.hp -= 3; boss.invul = 20; boss.hitStun = 25;
-                    screenShake = 8; playSound('hit');
-                    addFloatingText(boss.x + 8, boss.y - 6, "PARRY COUNTER -3!", '#38bdf8');
-                    projectiles.splice(i, 1);
-
-                    if (boss.hp <= 0) {
-                        triggerVictory();
-                        return;
-                    }
-                    continue;
-                }
-            }
-        } else {
-            if (player.invul === 0 && Math.hypot(player.x + 8 - pr.x, player.y + 9 - pr.y) < 12) {
-                if (player.isShielding && player.parryWindow > 0) {
-                    pr.reflected = true;
-                    pr.vx = -pr.vx * 1.6; pr.vy = -pr.vy * 1.6;
-                    pr.color = '#38bdf8'; pr.life = 100;
-                    playSound('parry'); screenShake = 6; addHype(30);
-                    addFloatingText(player.x - 4, player.y - 12, "PERFECT PARRY!", '#38bdf8');
-                    continue;
-                } else if (player.isShielding) {
-                    player.sp -= 15; playSound('block');
-                    addFloatingText(player.x, player.y - 6, "BLOCKED", '#0284c7');
-                    projectiles.splice(i, 1);
-                    continue;
-                } else {
-                    player.hp--; player.invul = player.armor === 'armored_scarf' ? 60 : 45;
-                    screenShake = 5; playSound('hit');
-                    addFloatingText(player.x, player.y - 6, "-1 HP", pr.color);
-                    projectiles.splice(i, 1);
-                    continue;
-                }
-            }
-        }
-
-        if (pr.life <= 0 || pr.x < 0 || pr.x > 320 || pr.y < 0 || pr.y > 224) {
-            projectiles.splice(i, 1);
-        }
-    }
-
-    for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx; p.y += p.vy; p.life--;
-        if (p.life <= 0) particles.splice(i, 1);
-    }
-    for (let i = floatingTexts.length - 1; i >= 0; i--) {
-        const ft = floatingTexts[i];
-        ft.y += ft.vy; ft.life--;
-        if (ft.life <= 0) floatingTexts.splice(i, 1);
-    }
 }
 
 // --- RENDER ---
@@ -1808,7 +1292,7 @@ function draw() {
     }
 
     // ==========================================
-    // СЛОЙ 1: ПИКСЕЛЬНЫЙ МИР (С КЭШЕМ ФОНА)
+    // СЛОЙ 1: ПИКСЕЛЬНЫЙ МИР (640x448)
     // ==========================================
     ctx.save();
     ctx.scale(2, 2);
@@ -1818,7 +1302,19 @@ function draw() {
     }
 
     if (currentRoom === 'CATACOMBS') {
-        ctx.drawImage(bgCatacombs, 0, 0); // Мгновенный вывод кэшированного фона!
+        // Фоновые плиты пола с 3D фаской
+        ctx.fillStyle = '#0a0d16'; ctx.fillRect(0, 0, 320, 224);
+        for (let y = 24; y < 196; y += 24) {
+            for (let x = 16; x < 304; x += 24) {
+                ctx.fillStyle = '#161b29'; ctx.fillRect(x, y, 23, 23);
+                ctx.fillStyle = '#262f45'; ctx.fillRect(x, y, 23, 1); ctx.fillRect(x, y, 1, 23);
+                ctx.fillStyle = '#0c0f17'; ctx.fillRect(x, y + 22, 23, 1); ctx.fillRect(x + 22, y, 1, 23);
+            }
+        }
+        ctx.fillStyle = '#06080e';
+        ctx.fillRect(0, 0, 320, 24); ctx.fillRect(0, 196, 320, 28);
+        ctx.fillRect(0, 0, 16, 224); ctx.fillRect(304, 0, 16, 224);
+        ctx.strokeStyle = '#334155'; ctx.strokeRect(15, 23, 290, 174);
 
         if (gateOpened) {
             ctx.fillStyle = '#020617'; ctx.fillRect(136, 4, 48, 20);
@@ -1832,7 +1328,14 @@ function draw() {
             }
         }
 
+        // Динамическое свечение факелов
         catacombsTorches.forEach(t => {
+            const rad = ctx.createRadialGradient(t.x + 3, t.y + 3, 2, t.x + 3, t.y + 3, 40);
+            rad.addColorStop(0, 'rgba(251, 191, 36, 0.22)');
+            rad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = rad;
+            ctx.fillRect(t.x - 40, t.y - 40, 86, 86);
+
             ctx.fillStyle = '#475569'; ctx.fillRect(t.x + 2, t.y + 4, 4, 6);
             const colors = ['#f59e0b', '#ef4444', '#fef08a'];
             ctx.fillStyle = colors[torchFrame % colors.length];
@@ -1856,9 +1359,39 @@ function draw() {
     }
 
     if (currentRoom === 'THRONE') {
-        ctx.drawImage(bgThrone, 0, 0); // Мгновенный вывод фона тронного зала!
+        ctx.fillStyle = '#140810'; ctx.fillRect(0, 0, 320, 224);
+        for (let y = 24; y < 196; y += 24) {
+            for (let x = 16; x < 304; x += 24) {
+                ctx.fillStyle = '#24101e'; ctx.fillRect(x, y, 23, 23);
+                ctx.fillStyle = '#4a1d37'; ctx.fillRect(x, y, 23, 1); ctx.fillRect(x, y, 1, 23);
+            }
+        }
+        // Красный ковёр
+        ctx.fillStyle = '#881337'; ctx.fillRect(130, 24, 60, 172);
+        ctx.fillStyle = '#be123c'; ctx.fillRect(134, 24, 52, 172);
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(130, 24, 2, 172); ctx.fillRect(188, 24, 2, 172);
+
+        // Трон
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(136, 10, 48, 26);
+        ctx.fillStyle = '#1e3a29'; ctx.fillRect(140, 12, 40, 22);
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(148, 14, 24, 4);
+
+        // Баннеры Xbox
+        ctx.fillStyle = '#107c10'; ctx.fillRect(36, 26, 16, 32); ctx.fillRect(268, 26, 16, 32);
+        ctx.fillStyle = '#050204';
+        ctx.fillRect(0, 0, 320, 24); ctx.fillRect(0, 196, 320, 28);
+        ctx.fillRect(0, 0, 16, 224); ctx.fillRect(304, 0, 16, 224);
+        ctx.strokeStyle = '#991b1b'; ctx.strokeRect(15, 23, 290, 174);
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(136, 196, 48, 16);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(158, 202, 4, 4);
 
         throneTorches.forEach(t => {
+            const rad = ctx.createRadialGradient(t.x + 3, t.y + 3, 2, t.x + 3, t.y + 3, 45);
+            rad.addColorStop(0, 'rgba(251, 191, 36, 0.25)');
+            rad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = rad;
+            ctx.fillRect(t.x - 45, t.y - 45, 96, 96);
+
             ctx.fillStyle = '#fbbf24'; ctx.fillRect(t.x + 2, t.y + 4, 4, 6);
             const colors = ['#f59e0b', '#ef4444', '#fef08a'];
             ctx.fillStyle = colors[torchFrame % colors.length];
