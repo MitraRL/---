@@ -312,7 +312,7 @@ function startBGM() {
     if (bgmTimer) return;
     bgmTimer = setInterval(() => {
         try {
-            if (!musicEnabled || !actx || inventoryOpen || transition.active || document.hidden) return;
+            if (!musicEnabled || !actx || (inventoryOpen && packAnimTimer === 0) || transition.active || document.hidden) return;
             const t = actx.currentTime;
 
             if (gameState === 'VICTORY' || gameState === 'CUTSCENE_RACE') {
@@ -459,6 +459,10 @@ ctx.imageSmoothingEnabled = false;
 const keys = {};
 let inventoryOpen = false;
 
+// ПЕРЕМЕННЫЕ ЛУТБОКСОВ (ПАКОВ)
+let packAnimTimer = 0;
+let packReward = null;
+
 window.addEventListener('contextmenu', e => e.preventDefault());
 
 let mousePos = { x: 160, y: 112 };
@@ -479,15 +483,60 @@ function trySkipDialog() {
     return false;
 }
 
+// ФУНКЦИЯ ОТКРЫТИЯ ПАКА
+function openPack() {
+    if (player.packs <= 0 || packAnimTimer > 0) return;
+    player.packs--;
+    playSound('door_unlock');
+    packAnimTimer = 180;
+    
+    const roll = Math.random();
+    if (roll < 0.15 && !player.hasGoldenFish) {
+        packReward = { id: 'golden_fish', name: 'ЗОЛОТАЯ РЫБА', rarity: 'ЛЕГЕНДАРНАЯ', color: '#fbbf24' };
+    } else if (roll < 0.35 && !player.hasArmoredScarf) {
+        packReward = { id: 'armored_scarf', name: 'СТАЛЬНОЙ ШАРФ', rarity: 'ЭПИЧЕСКАЯ', color: '#a855f7' };
+    } else if (roll < 0.65) {
+        packReward = { id: 'hype', name: 'ФУЛЛ ХАЙП', rarity: 'РЕДКАЯ', color: '#f43f5e' };
+    } else {
+        packReward = { id: 'energy', name: 'МАКС ЭНЕРГИЯ', rarity: 'ОБЫЧНАЯ', color: '#4ade80' };
+    }
+}
+
+// СЕНСОРНОЕ НАЖАТИЕ НА КНОПКУ ПАКА (Для телефонов)
+canvas.addEventListener('touchstart', e => {
+    if (inventoryOpen && packAnimTimer === 0) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const sx = 320 / rect.width;
+        const sy = 224 / rect.height;
+        const tx = (touch.clientX - rect.left) * sx;
+        const ty = (touch.clientY - rect.top) * sy;
+        
+        // Кнопка в 320x224 координатах: x:190, y:60, w:90, h:20
+        if (tx > 190 && tx < 280 && ty > 60 && ty < 80) {
+            openPack();
+            e.preventDefault();
+        }
+    }
+}, {passive: false});
+
 window.addEventListener('mousedown', e => {
     initAudio();
     if (trySkipDialog()) return; 
+
+    // Нажатие на кнопку пака мышью
+    if (inventoryOpen && packAnimTimer === 0) {
+        if (mousePos.x > 190 && mousePos.x < 280 && mousePos.y > 60 && mousePos.y < 80) {
+            openPack();
+            return;
+        }
+    }
 
     if (gameState === 'VICTORY') {
         triggerStreamReaction();
         return;
     }
-    if (gameState === 'PLAY') {
+    if (gameState === 'PLAY' && !inventoryOpen && packAnimTimer === 0) {
         if (e.button === 0) raiseShield();
         else if (e.button === 1) { e.preventDefault(); shootFrostShuriken(); }
         else if (e.button === 2) { e.preventDefault(); performMeleeAttack(); }
@@ -508,7 +557,7 @@ window.addEventListener('keydown', e => {
 
     if (e.code === 'KeyM') musicEnabled = !musicEnabled;
     if (e.code === 'KeyR') resetGame();
-    if (gameState === 'PLAY') {
+    if (gameState === 'PLAY' && packAnimTimer === 0) {
         if (e.code === 'KeyQ') switchWeapon();
         if (e.code === 'KeyE') activateUltimate();
         if (e.code === 'KeyF' || e.code === 'KeyX') shootFrostShuriken();
@@ -517,8 +566,8 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
-document.getElementById('btn-inv').addEventListener('click', () => { initAudio(); inventoryOpen = !inventoryOpen; });
-document.getElementById('btn-swap').addEventListener('click', () => { initAudio(); switchWeapon(); });
+document.getElementById('btn-inv').addEventListener('click', () => { initAudio(); if (packAnimTimer === 0) inventoryOpen = !inventoryOpen; });
+document.getElementById('btn-swap').addEventListener('click', () => { initAudio(); if (packAnimTimer === 0) switchWeapon(); });
 document.getElementById('btn-restart').addEventListener('click', () => { initAudio(); resetGame(); });
 
 // --- СЕНСОРНЫЙ ДЖОЙСТИК ---
@@ -537,7 +586,7 @@ function handleJoyStart(e) {
     initAudio();
     if (trySkipDialog()) return;
 
-    if (gameState === 'VICTORY') return;
+    if (gameState === 'VICTORY' || packAnimTimer > 0) return;
     const touch = e.changedTouches[0];
     touchJoystick.active = true;
     touchJoystick.touchId = touch.identifier;
@@ -599,7 +648,7 @@ function bindTouch(id, onDown, onUp) {
     btn.addEventListener('touchstart', e => {
         e.preventDefault();
         initAudio();
-        if (trySkipDialog()) return;
+        if (trySkipDialog() || packAnimTimer > 0) return;
 
         btn.classList.add('active');
         if (onDown) onDown();
@@ -619,15 +668,15 @@ function bindTouch(id, onDown, onUp) {
 
 bindTouch('btn-atk', () => {
     if (gameState === 'VICTORY') triggerStreamReaction();
-    else if (gameState === 'PLAY') performMeleeAttack();
+    else if (gameState === 'PLAY' && !inventoryOpen) performMeleeAttack();
 });
-bindTouch('btn-def', () => { if(gameState==='PLAY') raiseShield(); }, () => { player.isShielding = false; });
-bindTouch('btn-ice', () => { if(gameState==='PLAY') shootFrostShuriken(); });
-bindTouch('btn-dash', () => triggerDash());
-bindTouch('btn-ult', () => { if(gameState==='PLAY') activateUltimate(); });
+bindTouch('btn-def', () => { if(gameState==='PLAY' && !inventoryOpen) raiseShield(); }, () => { player.isShielding = false; });
+bindTouch('btn-ice', () => { if(gameState==='PLAY' && !inventoryOpen) shootFrostShuriken(); });
+bindTouch('btn-dash', () => { if(!inventoryOpen) triggerDash(); });
+bindTouch('btn-ult', () => { if(gameState==='PLAY' && !inventoryOpen) activateUltimate(); });
 
 function triggerDash() {
-    if (gameState === 'RACING' || gameState === 'CUTSCENE_RACE') return; // В гонках дэш не нужен
+    if (gameState === 'RACING' || gameState === 'CUTSCENE_RACE') return;
     if (!player.isSliding && player.sp >= 20 && !player.isShielding) {
         let sx = touchJoystick.active ? touchJoystick.x : 0;
         let sy = touchJoystick.active ? touchJoystick.y : 0;
@@ -655,7 +704,7 @@ let drops = [];
 let ultProjectiles = [];
 let ultActive = false;
 let ultTimer = 0;
-let gameState = 'PLAY'; // PLAY, CUTSCENE_RACE, RACING, VICTORY, GAMEOVER
+let gameState = 'PLAY'; 
 let torchFrame = 0;
 let torchTimer = 0;
 
@@ -697,7 +746,7 @@ let spawnTimer = 180;
 const MAX_BAMBOCHI_CATACOMBS = 4;
 const MAX_BAMBOCHI_THRONE = 3;
 
-// ИГРОК (ИСТИННО ЧЁРНЫЙ ПИНГВИН)
+// ИГРОК 
 const player = {
     x: 152, y: 160,
     w: 16, h: 18,
@@ -724,20 +773,21 @@ const player = {
     armor: 'red_scarf',
     hasArmoredScarf: false,
 
+    packs: 0, // КОЛ-ВО ПАКОВ ИГРОКА
     holdingItem: null,
     holdTimer: 0
 };
 
-// ЕЖИК МИТРА
 const npcMitra = {
     x: 90, y: 44,
     w: 18, h: 18,
     freed: false
 };
 
+// СУНДУКИ ТЕПЕРЬ ДАЮТ ПАКИ
 let chests = [
-    { x: 34, y: 80, item: 'armored_scarf', opened: false, name: 'БРОНИРОВАННЫЙ ШАРФ' },
-    { x: 270, y: 80, item: 'golden_fish', opened: false, name: 'ЗОЛОТАЯ РЫБА-КЛИНОК' }
+    { x: 34, y: 80, item: 'pack', opened: false, name: 'САБ-ПАК' },
+    { x: 270, y: 80, item: 'pack', opened: false, name: 'САБ-ПАК' }
 ];
 
 let scrolls = [
@@ -784,10 +834,10 @@ function tryDropPotion(x, y, forcedType) {
     const roll = Math.random();
     let type = forcedType;
     if (!type) {
-        if (roll < 0.45) type = 'potion_hp';
-        else if (roll < 0.75) type = 'potion_sp';
-        else if (roll < 0.95) type = 'star_hype';
-        else return;
+        if (roll < 0.40) type = 'potion_hp';
+        else if (roll < 0.70) type = 'potion_sp';
+        else if (roll < 0.90) type = 'star_hype';
+        else type = 'pack_drop'; // 10% ШАНС ВЫПАДЕНИЯ ПАКА
     }
 
     if (drops.length < 15) {
@@ -842,11 +892,7 @@ function triggerStreamReaction() {
 function spawnBambochPortal(customX, customY) {
     const px = customX !== undefined ? customX : ((Math.random() * 240 + 35) | 0);
     const py = customY !== undefined ? customY : ((Math.random() * 100 + 55) | 0);
-
-    spawnPortals.push({
-        x: px, y: py,
-        timer: 50, maxTimer: 50
-    });
+    spawnPortals.push({ x: px, y: py, timer: 50, maxTimer: 50 });
 }
 
 function raiseShield() {
@@ -872,12 +918,7 @@ function shootFrostShuriken() {
             if (player.facing === 'down') vy = 4.0;
         }
 
-        playerShots.push({
-            x: player.x + 8, y: player.y + 9,
-            vx, vy, life: 75,
-            type: 'frost_shuriken', rot: 0
-        });
-
+        playerShots.push({ x: player.x + 8, y: player.y + 9, vx, vy, life: 75, type: 'frost_shuriken', rot: 0 });
         addFloatingText(player.x - 4, player.y - 8, "ICE SHURIKEN!", '#38bdf8');
     }
 }
@@ -896,10 +937,7 @@ function performMeleeAttack() {
             if (player.facing === 'up') vy = -4.2;
             if (player.facing === 'down') vy = 4.2;
 
-            playerShots.push({
-                x: player.x + 8, y: player.y + 8,
-                vx, vy, life: 80, type: 'golden_wave', rot: 0
-            });
+            playerShots.push({ x: player.x + 8, y: player.y + 8, vx, vy, life: 80, type: 'golden_wave', rot: 0 });
         }
     }
 }
@@ -959,17 +997,17 @@ function triggerRaceCutscene() {
     boss.active = false;
     cutsceneTimer = 0;
     cutsceneChat = [];
-    dialog.timer = 0; // Обязательно сбрасываем старые диалоги
+    dialog.timer = 0; 
     minions = []; projectiles = []; playerShots = []; ultProjectiles = []; drops = []; spawnPortals = [];
-    floatingTexts = []; // ОЧИЩАЕМ ЗАВИСШИЕ ТЕКСТЫ
-    particles = [];     // ОЧИЩАЕМ ИСКРЫ
+    floatingTexts = []; 
+    particles = [];     
     playSound('fanfare');
 }
 
-// СТАРТ САМОЙ ГОНКИ
+// СТАРТ ГОНКИ
 function startRacingLevel() {
     gameState = 'RACING';
-    racingTimer = 1200; // 20 секунд (60 FPS)
+    racingTimer = 1200; 
     roadOffset = 0;
     racingObstacles = [];
     player.x = 152; player.y = 160; player.facing = 'up';
@@ -1000,27 +1038,23 @@ function resetGame() {
     player.schedules = 0; player.invul = 0; player.holdingItem = null; player.holdTimer = 0;
     player.isShielding = false; player.weapon = 'blue_fish'; player.hasGoldenFish = false;
     player.armor = 'red_scarf'; player.hasArmoredScarf = false;
+    player.packs = 0;
     player.facing = 'up';
 
+    packAnimTimer = 0;
+    inventoryOpen = false;
     npcMitra.freed = false;
     chests.forEach(c => c.opened = false);
     scrolls.forEach(s => s.collected = false);
 
     minions = createInitialMinions();
-    spawnPortals = [];
-    drops = [];
-    spawnTimer = 180;
-
+    spawnPortals = []; drops = []; spawnTimer = 180;
     boss.active = false; boss.hp = 36; boss.isRage = false; boss.x = 146; boss.y = 34; boss.hitStun = 0;
     boss.state = 'PATROL'; boss.overheatTimer = 0;
     projectiles = []; playerShots = []; ultProjectiles = [];
     ultActive = false;
     gameState = 'PLAY';
-    dialog = {
-        speaker: "ПИНГВИН",
-        text: "Катакомбы Чата! Найди 3 свитка расписания и спаси ёжика Митру!",
-        timer: 160, portrait: 'penguin'
-    };
+    dialog = { speaker: "ПИНГВИН", text: "Катакомбы Чата! Найди 3 свитка расписания и спаси ёжика Митру!", timer: 160, portrait: 'penguin' };
 }
 
 function addFloatingText(x, y, text, color = '#ffeb3b') {
@@ -1043,7 +1077,7 @@ function spawnSparks(x, y, color, count = 4) {
     }
 }
 
-// --- RENDER HELPERS (ОБЪЁМНЫЙ 16-BIT АРТ) ---
+// --- RENDER HELPERS ---
 function drawShadow(x, y, w, h) {
     ctx.fillStyle = 'rgba(5, 7, 13, 0.5)';
     ctx.beginPath();
@@ -1117,28 +1151,16 @@ function draw16BitPotion(d) {
     } else if (d.type === 'star_hype') {
         ctx.fillStyle = '#fbbf24'; ctx.fillRect(dx + 1, dy + 1, 6, 6);
         ctx.fillStyle = '#fff'; ctx.fillRect(dx + 2, dy + 2, 2, 2);
+    } else if (d.type === 'pack_drop') {
+        // Отрисовка мини-лутбокса на земле
+        ctx.fillStyle = '#a855f7'; ctx.fillRect(dx + 1, dy, 6, 8);
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(dx + 3, dy, 2, 8); ctx.fillRect(dx + 1, dy + 3, 6, 2);
     }
 }
 
-// ИСТИННО ЧЁРНЫЙ ПИНГВИН
 function draw16BitPenguin(p) {
     const px = p.x | 0, py = p.y | 0;
     drawShadow(px, py, p.w, p.h);
-
-    if (p.holdTimer > 0) {
-        ctx.fillStyle = '#09090b'; ctx.fillRect(px + 2, py + 4, 12, 14);
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(px + 4, py + 8, 8, 9);
-        ctx.fillStyle = '#f59e0b'; ctx.fillRect(px + 6, py + 8, 4, 3);
-        ctx.fillStyle = '#171717'; ctx.fillRect(px + 1, py + 2, 3, 6); ctx.fillRect(px + 12, py + 2, 3, 6);
-        if (p.holdingItem === 'golden_fish') {
-            ctx.fillStyle = '#fbbf24'; ctx.fillRect(px + 3, py - 10, 10, 6);
-            ctx.fillStyle = '#fff'; ctx.fillRect(px + 5, py - 9, 6, 2);
-        } else if (p.holdingItem === 'armored_scarf') {
-            ctx.fillStyle = '#cbd5e1'; ctx.fillRect(px + 3, py - 8, 10, 4);
-            ctx.fillStyle = '#64748b'; ctx.fillRect(px + 6, py - 9, 4, 6);
-        }
-        return;
-    }
 
     if (p.isSliding) {
         ctx.fillStyle = '#09090b'; ctx.fillRect(px, py + 6, 18, 10);
@@ -1269,64 +1291,49 @@ function draw16BitFavoritStreamer(x, y) {
     ctx.fillStyle = '#b71c1c'; ctx.fillRect(x + 20, y + 24, 8, 3);
     ctx.fillStyle = '#6d4c41'; ctx.fillRect(x + 16, y + 28, 16, 3);
 
-    // Синяя футболка Эвертона
     ctx.fillStyle = '#003399'; ctx.fillRect(x + 4, y + 32, 40, 36);
     ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 18, y + 32, 12, 6);
     ctx.fillStyle = '#003399'; ctx.fillRect(x + 22, y + 32, 4, 4);
     ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 10, y + 40, 6, 6);
 
-    // Микрофон
     ctx.fillStyle = '#475569'; ctx.fillRect(x + 28, y + 38, 10, 16);
     ctx.fillStyle = '#94a3b8'; ctx.fillRect(x + 30, y + 36, 6, 8);
     ctx.fillStyle = '#1e293b'; ctx.fillRect(x + 32, y + 54, 2, 14);
 }
 
-// --- ОТРИСОВКА БОЛИДОВ ДЛЯ ГОНКИ ---
 function draw16BitKart(kx, ky, col) {
     drawShadow(kx, ky, 20, 28);
-    // Колеса
     ctx.fillStyle = '#09090b';
     ctx.fillRect(kx - 4, ky + 4, 4, 8); ctx.fillRect(kx + 16, ky + 4, 4, 8);
     ctx.fillRect(kx - 4, ky + 18, 4, 8); ctx.fillRect(kx + 16, ky + 18, 4, 8);
-    // Корпус
     ctx.fillStyle = col;
     ctx.fillRect(kx + 4, ky, 8, 28);
     ctx.fillRect(kx, ky + 12, 16, 10);
-    // Кокпит
     ctx.fillStyle = '#0f172a'; ctx.fillRect(kx + 4, ky + 14, 8, 6);
-    // Голова пилота
     ctx.fillStyle = '#fff'; ctx.fillRect(kx + 6, ky + 15, 4, 4);
 }
 
 function draw16BitXboxKart(kx, ky) {
     drawShadow(kx, ky, 32, 24);
-    // Выхлоп пламени
     ctx.fillStyle = '#f59e0b';
     ctx.fillRect(kx + 8, ky - 6 + Math.random() * 4, 4, 6);
     ctx.fillRect(kx + 20, ky - 6 + Math.random() * 4, 4, 6);
-    // Корпус белого геймпада
     ctx.fillStyle = '#e2e8f0';
     ctx.beginPath(); ctx.roundRect(kx, ky, 32, 20, 8); ctx.fill();
     ctx.fillRect(kx + 12, ky + 4, 8, 20);
-    // Крестовина D-Pad
     ctx.fillStyle = '#1e293b'; ctx.fillRect(kx + 6, ky + 12, 6, 6);
-    // Кнопки
-    ctx.fillStyle = '#22c55e'; ctx.fillRect(kx + 22, ky + 14, 3, 3); // A
-    ctx.fillStyle = '#ef4444'; ctx.fillRect(kx + 26, ky + 10, 3, 3); // B
-    ctx.fillStyle = '#38bdf8'; ctx.fillRect(kx + 18, ky + 10, 3, 3); // X
-    ctx.fillStyle = '#eab308'; ctx.fillRect(kx + 22, ky + 6, 3, 3);  // Y
-    // Логотип Xbox
+    ctx.fillStyle = '#22c55e'; ctx.fillRect(kx + 22, ky + 14, 3, 3);
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(kx + 26, ky + 10, 3, 3);
+    ctx.fillStyle = '#38bdf8'; ctx.fillRect(kx + 18, ky + 10, 3, 3);
+    ctx.fillStyle = '#eab308'; ctx.fillRect(kx + 22, ky + 6, 3, 3); 
     ctx.fillStyle = '#10b981';
     ctx.beginPath(); ctx.arc(kx + 16, ky + 8, 4, 0, Math.PI * 2); ctx.fill();
 }
 
 function drawRacingWorld() {
-    // Зеленый газон по краям
     ctx.fillStyle = '#14532d'; ctx.fillRect(0, 0, 320, 224);
-    // Асфальт
     ctx.fillStyle = '#1e293b'; ctx.fillRect(40, 0, 240, 224);
     
-    // Белая разметка на дороге (скроллится)
     ctx.fillStyle = '#cbd5e1';
     for (let y = (roadOffset - 32); y < 224; y += 32) {
         ctx.fillRect(100, y, 4, 16);
@@ -1334,51 +1341,43 @@ function drawRacingWorld() {
         ctx.fillRect(220, y, 4, 16);
     }
     
-    // Красно-белые поребрики
     for (let y = (roadOffset - 16); y < 224; y += 16) {
         ctx.fillStyle = (Math.floor(y / 16) % 2 === 0) ? '#ef4444' : '#f8fafc';
         ctx.fillRect(36, y, 4, 16);
         ctx.fillRect(280, y, 4, 16);
     }
 
-    // Отрисовка препятствий (Ошибки OBS)
     racingObstacles.forEach(obs => {
         if (obs.type === 'obs_error') {
             ctx.fillStyle = '#0f172a'; ctx.fillRect(obs.x - 6, obs.y - 6, 12, 10);
             ctx.fillStyle = '#ef4444'; ctx.fillRect(obs.x - 6, obs.y - 6, 12, 2);
             ctx.fillStyle = '#dc2626'; ctx.fillRect(obs.x - 2, obs.y - 2, 4, 4);
         } else {
-            // Красное кольцо смерти (RROD)
             ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.arc(obs.x, obs.y, 6, 0, Math.PI * 2); ctx.stroke();
         }
     });
 
-    // Машина босса
     draw16BitXboxKart(boss.x, boss.y);
 
-    // Машины союзников
     allies.forEach(a => {
         draw16BitKart(a.x, a.y, a.color);
-        // Добавляем имена над союзниками
         ctx.fillStyle = '#fff'; 
         ctx.font = 'bold 8px monospace';
         ctx.fillText(a.name, a.x - 4, a.y - 4);
     });
 
-    // Машина Шипкера (мигает при уроне)
     if (player.invul === 0 || player.invul % 4 > 2) {
-        draw16BitKart(player.x, player.y, '#0284c7'); // Синий болид
+        draw16BitKart(player.x, player.y, '#0284c7');
         ctx.fillStyle = '#38bdf8'; 
         ctx.font = 'bold 8px monospace';
         ctx.fillText("Шипкер", player.x - 2, player.y - 4);
     }
 }
 
-// --- WORLD DRAWING (320x224 Space) ---
+// --- WORLD DRAWING ---
 function drawWorld() {
     if (currentRoom === 'CATACOMBS') {
-        // Каменный пол Катакомб
         ctx.fillStyle = '#141b2d'; ctx.fillRect(0, 0, 320, 224);
         for (let y = 24; y < 196; y += 24) {
             for (let x = 16; x < 304; x += 24) {
@@ -1520,9 +1519,8 @@ function drawWorld() {
     }
 }
 
-// --- UI DRAWING (640x448 Native Space) ---
+// --- UI DRAWING ---
 function drawUI() {
-    // В кат-сценах скрываем обычный UI
     if (gameState === 'CUTSCENE_RACE') return; 
 
     if (gameState === 'RACING') {
@@ -1550,7 +1548,6 @@ function drawUI() {
         ctx.fillText(ft.text, (ft.x * 2) | 0, (ft.y * 2) | 0);
     });
 
-    // Сердечки
     for (let i = 0; i < player.maxHp / 2; i++) {
         const hVal = player.hp - i * 2;
         const hx = 24 + i * 22;
@@ -1563,7 +1560,6 @@ function drawUI() {
         }
     }
 
-    // Шкала Хайпа
     if (gameState === 'PLAY') {
         const isHypeMax = player.hype === player.maxHype;
         ctx.fillStyle = '#0f172a'; ctx.fillRect(24, 34, 100, 10);
@@ -1576,7 +1572,6 @@ function drawUI() {
             ctx.fillText("ULT READY!", 132, 43);
         }
 
-        // Оружие и Свитки
         ctx.fillStyle = '#0f172a'; ctx.fillRect(470, 12, 70, 24);
         ctx.strokeStyle = '#475569'; ctx.strokeRect(470, 12, 70, 24);
         ctx.fillStyle = player.weapon === 'golden_fish' ? '#fbbf24' : '#38bdf8';
@@ -1587,8 +1582,7 @@ function drawUI() {
         ctx.fillText(`СВИТКИ: ${player.schedules}/${player.totalSchedules}`, 550, 28);
     }
 
-    // Диалоговое окно (Скрыто в гонках и катсценах)
-    if (dialog.timer > 0 && gameState === 'PLAY') {
+    if (dialog.timer > 0 && gameState === 'PLAY' && packAnimTimer === 0) {
         const dy = 320;
         ctx.fillStyle = 'rgba(15, 23, 42, 0.97)';
         ctx.fillRect(24, dy, 592, 104);
@@ -1636,12 +1630,11 @@ function drawUI() {
             }
         }
         ctx.fillText(line, 116, lineY);
-        
         ctx.fillStyle = '#94a3b8'; ctx.font = '10px monospace';
         ctx.fillText("Кликни, чтобы пропустить", 440, dy + 95);
     }
 
-    if (inventoryOpen) {
+    if (inventoryOpen && packAnimTimer === 0) {
         ctx.fillStyle = 'rgba(11, 15, 25, 0.96)';
         ctx.fillRect(60, 50, 520, 348);
         ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3;
@@ -1657,7 +1650,6 @@ function drawUI() {
             ctx.fillText(player.weapon === 'golden_fish' ? "► ЗОЛОТАЯ РЫБА (Урон: x2 + Волна)" : "  Синяя рыба-меч (Урон: 1)", 90, 155);
         } else {
             ctx.fillText("► Синяя рыба-меч (Урон: 1)", 90, 155);
-            ctx.fillStyle = '#64748b'; ctx.fillText("  [?] Найдите золотой сундук!", 90, 175);
         }
 
         ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 14px monospace';
@@ -1676,6 +1668,73 @@ function drawUI() {
 
         ctx.fillStyle = '#9ca3af'; ctx.font = '12px monospace';
         ctx.fillText("Нажмите [ИНВЕНТАРЬ] или [TAB], чтобы закрыть", 170, 370);
+
+        // --- КНОПКА ОТКРЫТИЯ ПАКОВ ---
+        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 14px monospace';
+        ctx.fillText("[САБ-ПАКИ]: У вас " + player.packs + " шт.", 380, 100);
+        
+        ctx.fillStyle = player.packs > 0 ? '#10b981' : '#475569';
+        ctx.fillRect(380, 120, 180, 40);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 14px monospace';
+        ctx.fillText("ОТКРЫТЬ ПАК", 425, 145);
+    }
+
+    // --- АНИМАЦИЯ ОТКРЫТИЯ ПАКА (КАРТОЧКА) ---
+    if (packAnimTimer > 0 && packReward) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillRect(0, 0, 640, 448);
+        
+        ctx.save();
+        ctx.translate(320, 224);
+        
+        // Вращающиеся лучи
+        ctx.rotate(Date.now() * 0.002);
+        for(let i = 0; i < 12; i++) {
+            ctx.fillStyle = (i % 2 === 0) ? packReward.color : 'rgba(255,255,255,0.05)';
+            ctx.beginPath();
+            ctx.moveTo(0,0);
+            ctx.arc(0, 0, 500, i * Math.PI/6, (i+1) * Math.PI/6);
+            ctx.fill();
+        }
+        ctx.restore();
+        
+        // Зум карточки
+        let scale = 1;
+        if (packAnimTimer > 150) {
+            scale = (180 - packAnimTimer) / 30;
+        } else if (packAnimTimer < 20) {
+            scale = packAnimTimer / 20;
+        }
+        
+        ctx.save();
+        ctx.translate(320, 224);
+        ctx.scale(scale, scale);
+        
+        // Отрисовка самой карты
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-90, -130, 180, 260);
+        ctx.strokeStyle = packReward.color;
+        ctx.lineWidth = 6;
+        ctx.strokeRect(-90, -130, 180, 260);
+        
+        ctx.fillStyle = packReward.color;
+        ctx.font = 'bold 22px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(packReward.rarity, 0, -90);
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 16px monospace';
+        ctx.fillText(packReward.name, 0, 90);
+        
+        // Иконка
+        ctx.font = '60px monospace';
+        if (packReward.id === 'golden_fish') ctx.fillText("🐟", 0, 20);
+        if (packReward.id === 'armored_scarf') ctx.fillText("🧣", 0, 20);
+        if (packReward.id === 'hype') ctx.fillText("⭐", 0, 20);
+        if (packReward.id === 'energy') ctx.fillText("🔋", 0, 20);
+        
+        ctx.restore();
+        ctx.textAlign = 'left';
     }
 
     if (transition.active) {
@@ -1749,7 +1808,6 @@ function drawRaceCutscene() {
     ctx.translate(150, 150);
     ctx.scale(3.2, 3.2);
     draw16BitFavoritStreamer(0, 0);
-    // Добавляем глитч поверх Фаворита
     ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
     if (Math.floor(Date.now() / 100) % 2 === 0) ctx.fillRect(-20, -10, 100, 80);
     ctx.restore();
@@ -1790,158 +1848,21 @@ function drawRaceCutscene() {
     ctx.fillText("[КЛИК / ENTER] ЧТОБЫ ГАЗОВАТЬ!", 30, 435);
 }
 
-function drawVictoryScreen() {
-    ctx.fillStyle = '#090d16'; ctx.fillRect(0, 0, 640, 448);
-
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(16, 12, 608, 38);
-    ctx.strokeStyle = '#38bdf8'; ctx.strokeRect(16, 12, 608, 38);
-
-    ctx.fillStyle = '#ef4444'; ctx.fillRect(28, 22, 10, 10);
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace';
-    ctx.fillText("В ЭФИРЕ", 44, 31);
-
-    ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 13px monospace';
-    ctx.fillText("Стрим Фаворита: СЕГОДНЯ В 19:00 ПО РАСПИСАНИЮ!", 120, 31);
-
-    ctx.fillStyle = '#94a3b8'; ctx.font = '11px monospace';
-    ctx.fillText("👁️ 14,880 зрителей", 480, 31);
-
-    ctx.fillStyle = '#000'; ctx.fillRect(16, 58, 380, 320);
-    ctx.strokeStyle = '#003399'; ctx.lineWidth = 3;
-    ctx.strokeRect(16, 58, 380, 320);
-
-    ctx.fillStyle = '#0a192f'; ctx.fillRect(19, 61, 374, 314);
-
-    ctx.save();
-    ctx.translate(150, 150);
-    ctx.scale(3.2, 3.2);
-    draw16BitFavoritStreamer(0, 0);
-    ctx.restore();
-
-    ctx.fillStyle = 'rgba(0, 40, 117, 0.9)';
-    ctx.fillRect(24, 330, 364, 38);
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace';
-    ctx.fillText("⚽ ФК ЭВЕРТОН — ТОЛЬКО ПОБЕДА! 💙", 36, 354);
-
-    ctx.fillStyle = '#0b1120'; ctx.fillRect(404, 58, 220, 320);
-    ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
-    ctx.strokeRect(404, 58, 220, 320);
-
-    ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 12px monospace';
-    ctx.fillText("💬 ЧАТ СТРИМА", 416, 78);
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(412, 86, 204, 2);
-
-    for (let i = 0; i < streamChat.length; i++) {
-        const msg = streamChat[i];
-        const my = 110 + i * 36;
-        ctx.fillStyle = msg.color; ctx.font = 'bold 10px monospace';
-        ctx.fillText(msg.user, 414, my);
-        ctx.fillStyle = '#f8fafc'; ctx.font = '10px monospace';
-        ctx.fillText(msg.text, 414, my + 14);
-    }
-
-    streamReactionParticles.forEach(rp => {
-        ctx.font = '16px monospace';
-        ctx.fillText(rp.char, rp.x, rp.y);
-    });
-
-    ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 14px monospace';
-    ctx.fillText("★ ПОБЕДА! ПИНГВИН ВЕРНУЛ НАСТРОЙКИ И СПАС СТРИМ ★", 30, 415);
-
-    ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 12px monospace';
-    ctx.fillText("[❤️ КЛИК / УДАР] — ОТПРАВИТЬ СЕРДЕЧКО НА СТРИМ", 30, 435);
-
-    ctx.fillStyle = '#4ade80'; ctx.font = 'bold 12px monospace';
-    ctx.fillText("[🔁 R] — СЫГРАТЬ СНОВА", 450, 425);
-}
-
-// --- ЛОГИКА ДЛЯ ГОНОК ---
-function updateRacing() {
-    roadOffset = (roadOffset + 8) % 32;
-    if (screenShake > 0) screenShake *= 0.86;
-    
-    // Управление машиной Шипкера
-    let dx = 0;
-    if (keys['KeyA'] || keys['ArrowLeft']) dx = -1;
-    if (keys['KeyD'] || keys['ArrowRight']) dx = 1;
-    if (touchJoystick.active && touchJoystick.x !== 0) {
-        dx = touchJoystick.x > 0 ? 1 : -1;
-    }
-    
-    player.x += dx * 3.5;
-    player.x = Math.max(40, Math.min(264, player.x)); // Границы дороги
-    
-    // Боты-союзники теперь активно виляют по трассе
-    allies[0].x = allies[0].baseX + Math.sin(Date.now() * allies[0].speed) * 45;
-    allies[1].x = allies[1].baseX + Math.cos(Date.now() * allies[1].speed) * 45;
-    
-    // Проверка столкновения Пингвина с союзниками (они мешают)
-    allies.forEach(a => {
-        if (Math.hypot(player.x - a.x, player.y - a.y) < 20) {
-            // Отталкиваем Пингвина
-            player.x += (player.x > a.x ? 5 : -5);
-            screenShake = 2;
-        }
-    });
-    
-    // Босс виляет по трассе
-    boss.x = 144 + Math.sin(Date.now() * 0.002) * 80;
-    
-    // Босс раскидывает препятствия
-    if (Math.random() < 0.04) {
-        racingObstacles.push({
-            x: boss.x + 16, 
-            y: boss.y + 24, 
-            vy: 5 + Math.random() * 2, 
-            type: Math.random() > 0.5 ? 'obs_error' : 'rrod'
-        });
-    }
-    
-    // Движение препятствий и проверка столкновений
-    for (let i = racingObstacles.length - 1; i >= 0; i--) {
-        const obs = racingObstacles[i];
-        obs.y += obs.vy;
-        
-        // Столкновение с игроком
-        if (player.invul === 0 && Math.hypot(player.x + 8 - obs.x, player.y + 14 - obs.y) < 16) {
-            player.hp--;
-            player.invul = 45;
-            screenShake = 8;
-            playSound('hit');
-            addFloatingText(player.x, player.y - 6, "-1 HP", '#ef4444');
-            racingObstacles.splice(i, 1);
-            if (player.hp <= 0) {
-                gameState = 'GAMEOVER';
-                return;
-            }
-            continue;
-        }
-        if (obs.y > 240) racingObstacles.splice(i, 1);
-    }
-    
-    if (player.invul > 0) player.invul--;
-    
-    // Таймер гонки
-    racingTimer--;
-    if (racingTimer <= 0) {
-        triggerVictory();
-    }
-
-    // --- ИСПРАВЛЕНИЕ ЗАВИСАЮЩИХ ТЕКСТОВ И ИСКР В ГОНКЕ ---
-    for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx; p.y += p.vy; p.life--;
-        if (p.life <= 0) particles.splice(i, 1);
-    }
-    for (let i = floatingTexts.length - 1; i >= 0; i--) {
-        const ft = floatingTexts[i];
-        ft.y += ft.vy; ft.life--;
-        if (ft.life <= 0) floatingTexts.splice(i, 1);
-    }
-}
-
 // --- UPDATE LOOP ---
 function update() {
+    // ЛОГИКА АНИМАЦИИ ОТКРЫТИЯ ПАКА (Блокирует всё остальное)
+    if (packAnimTimer > 0) {
+        packAnimTimer--;
+        if (packAnimTimer === 30 && packReward) {
+            playSound('fanfare');
+            if (packReward.id === 'golden_fish') { player.hasGoldenFish = true; player.weapon = 'golden_fish'; }
+            if (packReward.id === 'armored_scarf') { player.hasArmoredScarf = true; player.armor = 'armored_scarf'; player.maxHp = 8; player.hp = 8; }
+            if (packReward.id === 'hype') { player.hype = player.maxHype; }
+            if (packReward.id === 'energy') { player.hp = player.maxHp; player.sp = player.maxSp; }
+        }
+        return; 
+    }
+
     if (gameState === 'VICTORY') {
         streamChatTimer++;
         if (streamChatTimer > 45) {
@@ -1959,14 +1880,12 @@ function update() {
         return;
     }
     
-    // ЛОГИКА КАТ-СЦЕНЫ
     if (gameState === 'CUTSCENE_RACE') {
         cutsceneTimer++;
         cutsceneSequence.forEach(msg => {
             if (cutsceneTimer === msg.time) cutsceneChat.push(msg);
         });
         
-        // Пропуск кат-сцены
         if (cutsceneTimer > 350 || keys['Space'] || keys['Enter'] || (touchJoystick.active && cutsceneTimer > 30)) {
             startRacingLevel();
         }
@@ -2005,7 +1924,6 @@ function update() {
 
     if (inventoryOpen) return;
     
-    // ПЕРЕКЛЮЧЕНИЕ НА ГОНКИ
     if (gameState === 'RACING') {
         updateRacing();
         return;
@@ -2030,7 +1948,6 @@ function update() {
     if (keys['Enter']) dialog.timer = 0;
     if (player.hp <= 0) { gameState = 'GAMEOVER'; return; }
 
-    // ПЕРЕХОД ИЗ БОСС-ФАЙТА В КАТ-СЦЕНУ
     if (currentRoom === 'THRONE' && boss.active && boss.hp <= 0) {
         triggerRaceCutscene();
         return;
@@ -2151,7 +2068,6 @@ function update() {
     }
 
     if (currentRoom === 'CATACOMBS') {
-        // Освобождение Митры
         if (!npcMitra.freed && slashBox) {
             if (slashBox.x < npcMitra.x + 20 && slashBox.x + slashBox.w > npcMitra.x &&
                 slashBox.y < npcMitra.y + 20 && slashBox.y + slashBox.h > npcMitra.y) {
@@ -2167,8 +2083,7 @@ function update() {
                 dialog = {
                     speaker: "МИТРА (ЁЖИК)",
                     text: "Спасибо, братишка! Колянчик запер меня, чтобы я не выдал расписание! Держи мой Энергетик: скорость +15% и полное HP!",
-                    timer: 200,
-                    portrait: 'mitra'
+                    timer: 200, portrait: 'mitra'
                 };
             }
         }
@@ -2178,19 +2093,10 @@ function update() {
                 if (slashBox.x < c.x + 16 && slashBox.x + slashBox.w > c.x &&
                     slashBox.y < c.y + 14 && slashBox.y + slashBox.h > c.y) {
                     c.opened = true;
-                    player.holdingItem = c.item;
-                    player.holdTimer = 60;
+                    player.packs += 2; // ТЕПЕРЬ СУНДУКИ ДАЮТ ПО 2 ПАКА
                     playSound('fanfare');
                     spawnSparks(c.x + 8, c.y + 7, '#fbbf24', 8);
-
-                    if (c.item === 'golden_fish') {
-                        player.hasGoldenFish = true; player.weapon = 'golden_fish';
-                        dialog = { speaker: "НАХОДКА!", text: "Получена ЗОЛОТАЯ РЫБА! Двойной урон и волны при полном HP!", timer: 160, portrait: 'penguin' };
-                    } else if (c.item === 'armored_scarf') {
-                        player.hasArmoredScarf = true; player.armor = 'armored_scarf';
-                        player.maxHp = 8; player.hp = player.maxHp;
-                        dialog = { speaker: "НАХОДКА!", text: "Экипирован БРОНИРОВАННЫЙ ШАРФ! +2 Макс. HP и защита от урона!", timer: 160, portrait: 'penguin' };
-                    }
+                    dialog = { speaker: "НАХОДКА!", text: "Получено 2 САБ-ПАКА! Зайди в [ИНВЕНТАРЬ], чтобы открыть их как карточки!", timer: 240, portrait: 'penguin' };
                 }
             }
         });
@@ -2215,7 +2121,6 @@ function update() {
         });
     }
 
-    // Сбор зелий
     for (let i = drops.length - 1; i >= 0; i--) {
         const d = drops[i];
         d.life--;
@@ -2230,6 +2135,9 @@ function update() {
             } else if (d.type === 'star_hype') {
                 addHype(25);
                 addFloatingText(player.x, player.y - 8, "+HYPE! ⭐", '#fbbf24');
+            } else if (d.type === 'pack_drop') {
+                player.packs++;
+                addFloatingText(player.x, player.y - 8, "+1 ПАК! 🎁", '#a855f7');
             }
             drops.splice(i, 1);
             continue;
@@ -2237,7 +2145,6 @@ function update() {
         if (d.life <= 0) drops.splice(i, 1);
     }
 
-    // Снаряды игрока
     for (let i = playerShots.length - 1; i >= 0; i--) {
         const ps = playerShots[i];
         ps.x += ps.vx; ps.y += ps.vy;
@@ -2282,7 +2189,6 @@ function update() {
         }
     }
 
-    // Ульта
     for (let i = ultProjectiles.length - 1; i >= 0; i--) {
         const up = ultProjectiles[i];
         up.y += up.vy; up.life--;
@@ -2317,7 +2223,6 @@ function update() {
 
     const baseDamage = (player.weapon === 'golden_fish') ? 2 : 1;
 
-    // Бамбочи
     for (let i = minions.length - 1; i >= 0; i--) {
         const m = minions[i];
         if (m.dead || m.hp <= 0) {
@@ -2367,7 +2272,6 @@ function update() {
         }
     }
 
-    // Босс Колянчик
     if (currentRoom === 'THRONE' && boss.active && boss.hp > 0) {
         if (boss.invul > 0) boss.invul--;
 
@@ -2471,7 +2375,6 @@ function update() {
         }
     }
 
-    // --- ОБНОВЛЕНИЕ ТЕКСТОВ И ИСКР В ОБЫЧНОМ РЕЖИМЕ ---
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx; p.y += p.vy; p.life--;
@@ -2490,7 +2393,6 @@ function loop() {
     requestAnimationFrame(loop);
 }
 
-// Запуск игрового цикла
 loop();
 </script>
 </body>
