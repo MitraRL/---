@@ -398,13 +398,6 @@ function playSound(type) {
             gain.gain.setValueAtTime(0.3, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.25);
             osc.connect(gain); gain.connect(actx.destination);
             osc.start(t); osc.stop(t + 0.25);
-        } else if (type === 'spawn_portal') {
-            const osc = actx.createOscillator(); const gain = actx.createGain();
-            osc.type = 'sine'; osc.frequency.setValueAtTime(200, t);
-            gain.gain.linearRampToValueAtTime(500, t + 0.15);
-            gain.gain.setValueAtTime(0.12, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.15);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(t); osc.stop(t + 0.15);
         } else if (type === 'block') {
             const osc = actx.createOscillator(); const gain = actx.createGain();
             osc.type = 'triangle'; osc.frequency.setValueAtTime(200, t);
@@ -810,7 +803,7 @@ function spawnBambochPortal(customX, customY) {
         x: px, y: py,
         timer: 50, maxTimer: 50
     });
-    playSound('spawn_portal');
+    // Удален звук спавна портала, чтобы не было бага "БУУУУМ"
 }
 
 function raiseShield() {
