@@ -333,7 +333,7 @@ function startBGM() {
             const bOsc = actx.createOscillator();
             const bGain = actx.createGain();
             bOsc.type = 'sawtooth';
-            bOsc.frequency.setValueAtTime((currentRoom === 'THRONE' ? bFreq * 1.2 : bFreq) / 2, t);
+            bOsc.frequency.setValueAtTime((currentRoom === 'THRONE' || gameState === 'RACING' ? bFreq * 1.2 : bFreq) / 2, t);
             bGain.gain.setValueAtTime(0.04, t);
             bGain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
             bOsc.connect(bGain); bGain.connect(actx.destination);
@@ -344,7 +344,7 @@ function startBGM() {
                 const lOsc = actx.createOscillator();
                 const lGain = actx.createGain();
                 lOsc.type = 'square';
-                lOsc.frequency.setValueAtTime(currentRoom === 'THRONE' ? lFreq * 1.2 : lFreq, t);
+                lOsc.frequency.setValueAtTime(currentRoom === 'THRONE' || gameState === 'RACING' ? lFreq * 1.2 : lFreq, t);
                 lGain.gain.setValueAtTime(0.02, t);
                 lGain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
                 lOsc.connect(lGain); lGain.connect(actx.destination);
@@ -476,9 +476,11 @@ window.addEventListener('mousedown', e => {
         triggerStreamReaction();
         return;
     }
-    if (e.button === 0) raiseShield();
-    else if (e.button === 1) { e.preventDefault(); shootFrostShuriken(); }
-    else if (e.button === 2) { e.preventDefault(); performMeleeAttack(); }
+    if (gameState === 'PLAY') {
+        if (e.button === 0) raiseShield();
+        else if (e.button === 1) { e.preventDefault(); shootFrostShuriken(); }
+        else if (e.button === 2) { e.preventDefault(); performMeleeAttack(); }
+    }
 });
 
 window.addEventListener('mouseup', e => {
@@ -490,10 +492,12 @@ window.addEventListener('keydown', e => {
     keys[e.code] = true;
     if (e.code === 'KeyM') musicEnabled = !musicEnabled;
     if (e.code === 'KeyR') resetGame();
-    if (e.code === 'KeyQ') switchWeapon();
-    if (e.code === 'KeyE') activateUltimate();
-    if (e.code === 'KeyF' || e.code === 'KeyX') shootFrostShuriken();
-    if (e.code === 'KeyI' || e.code === 'Tab') { e.preventDefault(); inventoryOpen = !inventoryOpen; }
+    if (gameState === 'PLAY') {
+        if (e.code === 'KeyQ') switchWeapon();
+        if (e.code === 'KeyE') activateUltimate();
+        if (e.code === 'KeyF' || e.code === 'KeyX') shootFrostShuriken();
+        if (e.code === 'KeyI' || e.code === 'Tab') { e.preventDefault(); inventoryOpen = !inventoryOpen; }
+    }
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
@@ -595,14 +599,15 @@ function bindTouch(id, onDown, onUp) {
 
 bindTouch('btn-atk', () => {
     if (gameState === 'VICTORY') triggerStreamReaction();
-    else performMeleeAttack();
+    else if (gameState === 'PLAY') performMeleeAttack();
 });
-bindTouch('btn-def', () => raiseShield(), () => { player.isShielding = false; });
-bindTouch('btn-ice', () => shootFrostShuriken());
+bindTouch('btn-def', () => { if(gameState==='PLAY') raiseShield(); }, () => { player.isShielding = false; });
+bindTouch('btn-ice', () => { if(gameState==='PLAY') shootFrostShuriken(); });
 bindTouch('btn-dash', () => triggerDash());
-bindTouch('btn-ult', () => activateUltimate());
+bindTouch('btn-ult', () => { if(gameState==='PLAY') activateUltimate(); });
 
 function triggerDash() {
+    if (gameState === 'RACING') return; // В гонках дэш не нужен
     if (!player.isSliding && player.sp >= 20 && !player.isShielding) {
         let sx = touchJoystick.active ? touchJoystick.x : 0;
         let sy = touchJoystick.active ? touchJoystick.y : 0;
@@ -630,13 +635,22 @@ let drops = [];
 let ultProjectiles = [];
 let ultActive = false;
 let ultTimer = 0;
-let gameState = 'PLAY'; // PLAY, VICTORY, GAMEOVER
+let gameState = 'PLAY'; // PLAY, RACING, VICTORY, GAMEOVER
 let torchFrame = 0;
 let torchTimer = 0;
 
 let currentRoom = 'CATACOMBS';
 let gateOpened = false;
 let throneDoorLocked = false;
+
+// ПЕРЕМЕННЫЕ ДЛЯ ГОНОК
+let racingTimer = 0;
+let roadOffset = 0;
+let racingObstacles = [];
+let allies = [
+    {x: 60, y: 170, color: '#f59e0b', name: 'Елистратов'},
+    {x: 230, y: 170, color: '#10b981', name: 'Блядович'}
+];
 
 let transition = {
     active: false,
@@ -803,7 +817,6 @@ function spawnBambochPortal(customX, customY) {
         x: px, y: py,
         timer: 50, maxTimer: 50
     });
-    // Удален звук спавна портала, чтобы не было бага "БУУУУМ"
 }
 
 function raiseShield() {
@@ -1194,7 +1207,6 @@ function draw16BitMinion(m) {
     }
 }
 
-// --- ФАВОРИТ В СИНЕЙ ФУТБОЛКЕ ЭВЕРТОНА ---
 function draw16BitFavoritStreamer(x, y) {
     ctx.fillStyle = '#3e2723';
     ctx.fillRect(x + 12, y, 24, 10); ctx.fillRect(x + 8, y + 4, 32, 8);
@@ -1213,6 +1225,91 @@ function draw16BitFavoritStreamer(x, y) {
     ctx.fillStyle = '#475569'; ctx.fillRect(x + 28, y + 38, 10, 16);
     ctx.fillStyle = '#94a3b8'; ctx.fillRect(x + 30, y + 36, 6, 8);
     ctx.fillStyle = '#1e293b'; ctx.fillRect(x + 32, y + 54, 2, 14);
+}
+
+// --- ОТРИСОВКА БОЛИДОВ ДЛЯ ГОНКИ ---
+function draw16BitKart(kx, ky, col) {
+    drawShadow(kx, ky, 20, 28);
+    // Колеса
+    ctx.fillStyle = '#09090b';
+    ctx.fillRect(kx - 4, ky + 4, 4, 8); ctx.fillRect(kx + 16, ky + 4, 4, 8);
+    ctx.fillRect(kx - 4, ky + 18, 4, 8); ctx.fillRect(kx + 16, ky + 18, 4, 8);
+    // Корпус
+    ctx.fillStyle = col;
+    ctx.fillRect(kx + 4, ky, 8, 28);
+    ctx.fillRect(kx, ky + 12, 16, 10);
+    // Кокпит
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(kx + 4, ky + 14, 8, 6);
+    // Голова пилота
+    ctx.fillStyle = '#fff'; ctx.fillRect(kx + 6, ky + 15, 4, 4);
+}
+
+function draw16BitXboxKart(kx, ky) {
+    drawShadow(kx, ky, 32, 24);
+    // Выхлоп пламени
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillRect(kx + 8, ky - 6 + Math.random() * 4, 4, 6);
+    ctx.fillRect(kx + 20, ky - 6 + Math.random() * 4, 4, 6);
+    // Корпус белого геймпада
+    ctx.fillStyle = '#e2e8f0';
+    ctx.beginPath(); ctx.roundRect(kx, ky, 32, 20, 8); ctx.fill();
+    ctx.fillRect(kx + 12, ky + 4, 8, 20);
+    // Крестовина D-Pad
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(kx + 6, ky + 12, 6, 6);
+    // Кнопки
+    ctx.fillStyle = '#22c55e'; ctx.fillRect(kx + 22, ky + 14, 3, 3); // A
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(kx + 26, ky + 10, 3, 3); // B
+    ctx.fillStyle = '#38bdf8'; ctx.fillRect(kx + 18, ky + 10, 3, 3); // X
+    ctx.fillStyle = '#eab308'; ctx.fillRect(kx + 22, ky + 6, 3, 3);  // Y
+    // Логотип Xbox
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath(); ctx.arc(kx + 16, ky + 8, 4, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawRacingWorld() {
+    // Зеленый газон по краям
+    ctx.fillStyle = '#14532d'; ctx.fillRect(0, 0, 320, 224);
+    // Асфальт
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(40, 0, 240, 224);
+    
+    // Белая разметка на дороге (скроллится)
+    ctx.fillStyle = '#cbd5e1';
+    for (let y = (roadOffset - 32); y < 224; y += 32) {
+        ctx.fillRect(100, y, 4, 16);
+        ctx.fillRect(160, y, 4, 16);
+        ctx.fillRect(220, y, 4, 16);
+    }
+    
+    // Красно-белые поребрики
+    for (let y = (roadOffset - 16); y < 224; y += 16) {
+        ctx.fillStyle = (Math.floor(y / 16) % 2 === 0) ? '#ef4444' : '#f8fafc';
+        ctx.fillRect(36, y, 4, 16);
+        ctx.fillRect(280, y, 4, 16);
+    }
+
+    // Отрисовка препятствий (Ошибки OBS)
+    racingObstacles.forEach(obs => {
+        if (obs.type === 'obs_error') {
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(obs.x - 6, obs.y - 6, 12, 10);
+            ctx.fillStyle = '#ef4444'; ctx.fillRect(obs.x - 6, obs.y - 6, 12, 2);
+            ctx.fillStyle = '#dc2626'; ctx.fillRect(obs.x - 2, obs.y - 2, 4, 4);
+        } else {
+            // Красное кольцо смерти (RROD)
+            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(obs.x, obs.y, 6, 0, Math.PI * 2); ctx.stroke();
+        }
+    });
+
+    // Машина босса
+    draw16BitXboxKart(boss.x, boss.y);
+
+    // Машины союзников
+    allies.forEach(a => draw16BitKart(a.x, a.y, a.color));
+
+    // Машина Шипкера (мигает при уроне)
+    if (player.invul === 0 || player.invul % 4 > 2) {
+        draw16BitKart(player.x, player.y, '#0284c7'); // Синий болид
+    }
 }
 
 // --- WORLD DRAWING (320x224 Space) ---
@@ -1244,23 +1341,19 @@ function drawWorld() {
             }
         }
 
-        // Факелы
         catacombsTorches.forEach(t => {
             const rad = ctx.createRadialGradient(t.x + 3, t.y + 3, 2, t.x + 3, t.y + 3, 38);
             rad.addColorStop(0, 'rgba(251, 191, 36, 0.28)');
             rad.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = rad;
             ctx.fillRect(t.x - 40, t.y - 40, 86, 86);
-
             ctx.fillStyle = '#64748b'; ctx.fillRect(t.x + 2, t.y + 4, 4, 6);
             const colors = ['#f59e0b', '#ef4444', '#fef08a'];
             ctx.fillStyle = colors[torchFrame % colors.length];
             ctx.fillRect(t.x + 1, t.y - 1, 6, 6);
         });
 
-        // ЕЖИК МИТРА
         draw16BitMitraAndCage(npcMitra);
-
         chests.forEach(draw16BitChest);
         drops.forEach(draw16BitPotion);
 
@@ -1307,7 +1400,6 @@ function drawWorld() {
             rad.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = rad;
             ctx.fillRect(t.x - 40, t.y - 40, 86, 86);
-
             ctx.fillStyle = '#fbbf24'; ctx.fillRect(t.x + 2, t.y + 4, 4, 6);
             const colors = ['#f59e0b', '#ef4444', '#fef08a'];
             ctx.fillStyle = colors[torchFrame % colors.length];
@@ -1367,7 +1459,10 @@ function drawWorld() {
 
 // --- UI DRAWING (640x448 Native Space) ---
 function drawUI() {
-    if (currentRoom === 'THRONE' && boss.active && boss.hp > 0) {
+    if (gameState === 'RACING') {
+        ctx.fillStyle = '#fde68a'; ctx.font = 'bold 16px monospace';
+        ctx.fillText(`ВРЕМЯ ПОГОНИ: ${(racingTimer/60).toFixed(1)}с`, 24, 28);
+    } else if (currentRoom === 'THRONE' && boss.active && boss.hp > 0) {
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 12px monospace';
         ctx.textAlign = 'center';
@@ -1393,36 +1488,38 @@ function drawUI() {
     for (let i = 0; i < player.maxHp / 2; i++) {
         const hVal = player.hp - i * 2;
         const hx = 24 + i * 22;
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(hx, 12, 18, 16);
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(hx, (gameState === 'RACING' ? 40 : 12), 18, 16);
         if (hVal >= 2) {
-            ctx.fillStyle = '#ef4444'; ctx.fillRect(hx + 2, 14, 14, 12);
-            ctx.fillStyle = '#fca5a5'; ctx.fillRect(hx + 4, 16, 4, 4);
+            ctx.fillStyle = '#ef4444'; ctx.fillRect(hx + 2, (gameState === 'RACING' ? 42 : 14), 14, 12);
+            ctx.fillStyle = '#fca5a5'; ctx.fillRect(hx + 4, (gameState === 'RACING' ? 44 : 16), 4, 4);
         } else if (hVal === 1) {
-            ctx.fillStyle = '#ef4444'; ctx.fillRect(hx + 2, 14, 7, 12);
+            ctx.fillStyle = '#ef4444'; ctx.fillRect(hx + 2, (gameState === 'RACING' ? 42 : 14), 7, 12);
         }
     }
 
     // Шкала Хайпа
-    const isHypeMax = player.hype === player.maxHype;
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(24, 34, 100, 10);
-    ctx.fillStyle = isHypeMax ? ((Math.floor(Date.now() / 150) % 2 === 0) ? '#fbbf24' : '#f43f5e') : '#a855f7';
-    ctx.fillRect(24, 34, (player.hype / player.maxHype) * 100, 10);
-    ctx.strokeStyle = '#475569'; ctx.strokeRect(24, 34, 100, 10);
+    if (gameState === 'PLAY') {
+        const isHypeMax = player.hype === player.maxHype;
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(24, 34, 100, 10);
+        ctx.fillStyle = isHypeMax ? ((Math.floor(Date.now() / 150) % 2 === 0) ? '#fbbf24' : '#f43f5e') : '#a855f7';
+        ctx.fillRect(24, 34, (player.hype / player.maxHype) * 100, 10);
+        ctx.strokeStyle = '#475569'; ctx.strokeRect(24, 34, 100, 10);
 
-    if (isHypeMax) {
-        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 11px monospace';
-        ctx.fillText("ULT READY!", 132, 43);
+        if (isHypeMax) {
+            ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 11px monospace';
+            ctx.fillText("ULT READY!", 132, 43);
+        }
+
+        // Оружие и Свитки
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(470, 12, 70, 24);
+        ctx.strokeStyle = '#475569'; ctx.strokeRect(470, 12, 70, 24);
+        ctx.fillStyle = player.weapon === 'golden_fish' ? '#fbbf24' : '#38bdf8';
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText(player.weapon === 'golden_fish' ? "ЗОЛОТО" : "МЕЧ", 484, 28);
+
+        ctx.fillStyle = '#fde68a'; ctx.font = 'bold 13px monospace';
+        ctx.fillText(`СВИТКИ: ${player.schedules}/${player.totalSchedules}`, 550, 28);
     }
-
-    // Оружие и Свитки
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(470, 12, 70, 24);
-    ctx.strokeStyle = '#475569'; ctx.strokeRect(470, 12, 70, 24);
-    ctx.fillStyle = player.weapon === 'golden_fish' ? '#fbbf24' : '#38bdf8';
-    ctx.font = 'bold 12px monospace';
-    ctx.fillText(player.weapon === 'golden_fish' ? "ЗОЛОТО" : "МЕЧ", 484, 28);
-
-    ctx.fillStyle = '#fde68a'; ctx.font = 'bold 13px monospace';
-    ctx.fillText(`СВИТКИ: ${player.schedules}/${player.totalSchedules}`, 550, 28);
 
     // Диалоговое окно
     if (dialog.timer > 0) {
@@ -1539,16 +1636,19 @@ function draw() {
         return;
     }
 
-    // 1. Рисуем 16-битный мир (масштаб 2x)
     ctx.save();
     ctx.scale(2, 2);
     if (screenShake > 0.5) {
         ctx.translate(((Math.random() - 0.5) * screenShake) | 0, ((Math.random() - 0.5) * screenShake) | 0);
     }
-    drawWorld();
-    ctx.restore();
 
-    // 2. Рисуем четкий UI
+    if (gameState === 'RACING') {
+        drawRacingWorld();
+    } else {
+        drawWorld();
+    }
+    
+    ctx.restore();
     drawUI();
 }
 
@@ -1608,13 +1708,78 @@ function drawVictoryScreen() {
     });
 
     ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 14px monospace';
-    ctx.fillText("★ ПОБЕДА! ПИНГВИН СПАС РАСПИСАНИЕ ★", 30, 415);
+    ctx.fillText("★ ПОБЕДА! ПИНГВИН ВЕРНУЛ НАСТРОЙКИ И СПАС СТРИМ ★", 30, 415);
 
     ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 12px monospace';
     ctx.fillText("[❤️ КЛИК / УДАР] — ОТПРАВИТЬ СЕРДЕЧКО НА СТРИМ", 30, 435);
 
     ctx.fillStyle = '#4ade80'; ctx.font = 'bold 12px monospace';
     ctx.fillText("[🔁 R] — СЫГРАТЬ СНОВА", 450, 425);
+}
+
+// --- ЛОГИКА ДЛЯ ГОНОК ---
+function updateRacing() {
+    roadOffset = (roadOffset + 8) % 32;
+    if (dialog.timer > 0) dialog.timer--;
+    if (screenShake > 0) screenShake *= 0.86;
+    
+    // Управление машиной Шипкера
+    let dx = 0;
+    if (keys['KeyA'] || keys['ArrowLeft']) dx = -1;
+    if (keys['KeyD'] || keys['ArrowRight']) dx = 1;
+    if (touchJoystick.active && touchJoystick.x !== 0) {
+        dx = touchJoystick.x > 0 ? 1 : -1;
+    }
+    
+    player.x += dx * 3.5;
+    player.x = Math.max(40, Math.min(264, player.x)); // Границы дороги
+    
+    // Боты-союзники немного плавают вверх-вниз
+    allies[0].y = 160 + Math.sin(Date.now() * 0.004) * 15;
+    allies[1].y = 160 + Math.cos(Date.now() * 0.005) * 15;
+    
+    // Босс виляет по трассе
+    boss.x = 144 + Math.sin(Date.now() * 0.002) * 80;
+    
+    // Босс раскидывает препятствия
+    if (Math.random() < 0.04 && dialog.timer <= 0) {
+        racingObstacles.push({
+            x: boss.x + 16, 
+            y: boss.y + 24, 
+            vy: 5 + Math.random() * 2, 
+            type: Math.random() > 0.5 ? 'obs_error' : 'rrod'
+        });
+    }
+    
+    // Движение препятствий и проверка столкновений
+    for (let i = racingObstacles.length - 1; i >= 0; i--) {
+        const obs = racingObstacles[i];
+        obs.y += obs.vy;
+        
+        // Столкновение с игроком
+        if (player.invul === 0 && Math.hypot(player.x + 8 - obs.x, player.y + 14 - obs.y) < 16) {
+            player.hp--;
+            player.invul = 45;
+            screenShake = 8;
+            playSound('hit');
+            addFloatingText(player.x, player.y - 6, "-1 HP", '#ef4444');
+            racingObstacles.splice(i, 1);
+            if (player.hp <= 0) {
+                gameState = 'GAMEOVER';
+                return;
+            }
+            continue;
+        }
+        if (obs.y > 240) racingObstacles.splice(i, 1);
+    }
+    
+    if (player.invul > 0) player.invul--;
+    
+    // Таймер гонки
+    racingTimer--;
+    if (racingTimer <= 0) {
+        triggerVictory();
+    }
 }
 
 // --- UPDATE LOOP ---
@@ -1667,6 +1832,13 @@ function update() {
     }
 
     if (inventoryOpen) return;
+    
+    // ПЕРЕКЛЮЧЕНИЕ НА ГОНКИ
+    if (gameState === 'RACING') {
+        updateRacing();
+        return;
+    }
+
     if (dialog.timer > 0) dialog.timer--;
     if (screenShake > 0) screenShake *= 0.86;
 
@@ -1676,7 +1848,6 @@ function update() {
     if (player.invul > 0) player.invul--;
     if (player.holdTimer > 0) { player.holdTimer--; return; }
 
-    // ИСПРАВЛЕНИЕ УЛЬТЫ: Сброс таймера и состояния способности
     if (ultActive) {
         ultTimer--;
         if (ultTimer <= 0) {
@@ -1687,8 +1858,33 @@ function update() {
     if (keys['Enter']) dialog.timer = 0;
     if (player.hp <= 0) { gameState = 'GAMEOVER'; return; }
 
-    if (boss.active && boss.hp <= 0) {
-        triggerVictory();
+    // ПЕРЕХОД ИЗ БОСС-ФАЙТА В ГОНКИ
+    if (currentRoom === 'THRONE' && boss.active && boss.hp <= 0) {
+        boss.active = false;
+        gameState = 'RACING';
+        racingTimer = 1200; // 20 секунд
+        roadOffset = 0;
+        racingObstacles = [];
+        player.x = 152; player.y = 160;
+        boss.x = 146; boss.y = 40;
+        minions = []; projectiles = []; playerShots = []; ultProjectiles = []; spawnPortals = []; drops = [];
+        playSound('fanfare');
+        
+        dialog = {
+            speaker: "ГЕНЕРАЛ 1:6",
+            text: "Победили?! Нет! Я украл настройки OBS! Без них стрима не будет! АХАХАХ!",
+            timer: 280, portrait: 'boss'
+        };
+        
+        setTimeout(() => {
+            if (gameState === 'RACING') {
+                dialog = {
+                    speaker: "ЕЛИСТРАТОВ",
+                    text: "Шипкер, прыгай в синий болид! Мы с Блядовичем прикроем! Жми на газ!",
+                    timer: 260, portrait: 'penguin'
+                };
+            }
+        }, 4500);
         return;
     }
 
@@ -1930,11 +2126,6 @@ function update() {
                 playSound(ps.type === 'frost_shuriken' ? 'freeze' : 'hit');
                 addFloatingText(boss.x + 8, boss.y - 6, `RANGED -${dmg}!`, '#38bdf8');
                 ps.life = 0;
-
-                if (boss.hp <= 0) {
-                    triggerVictory();
-                    return;
-                }
             }
         }
 
@@ -1967,11 +2158,6 @@ function update() {
                     boss.hp -= ultDmg; boss.invul = 15; boss.hitStun = 15;
                     screenShake = 8; playSound('hit');
                     addFloatingText(boss.x + 8, boss.y - 6, `ULT -${ultDmg}!`, '#f43f5e');
-
-                    if (boss.hp <= 0) {
-                        triggerVictory();
-                        return;
-                    }
                 }
             }
         }
@@ -2090,11 +2276,6 @@ function update() {
                 boss.hp -= totalDmg; boss.invul = 20; boss.hitStun = 12;
                 addHype(18); screenShake = 6; playSound('hit');
                 addFloatingText(boss.x + 8, boss.y - 6, `-${totalDmg} CRIT!`, '#fbbf24');
-
-                if (boss.hp <= 0) {
-                    triggerVictory();
-                    return;
-                }
             }
         }
     }
@@ -2110,11 +2291,6 @@ function update() {
                     screenShake = 8; playSound('hit');
                     addFloatingText(boss.x + 8, boss.y - 6, "PARRY COUNTER -3!", '#38bdf8');
                     projectiles.splice(i, 1);
-
-                    if (boss.hp <= 0) {
-                        triggerVictory();
-                        return;
-                    }
                     continue;
                 }
             }
