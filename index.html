@@ -502,7 +502,7 @@ function openPack() {
     }
 }
 
-// СЕНСОРНОЕ НАЖАТИЕ НА КНОПКУ ПАКА (Для телефонов)
+// СЕНСОРНОЕ НАЖАТИЕ НА КНОПКУ ПАКА
 canvas.addEventListener('touchstart', e => {
     if (inventoryOpen && packAnimTimer === 0) {
         const rect = canvas.getBoundingClientRect();
@@ -512,7 +512,6 @@ canvas.addEventListener('touchstart', e => {
         const tx = (touch.clientX - rect.left) * sx;
         const ty = (touch.clientY - rect.top) * sy;
         
-        // Кнопка в 320x224 координатах: x:190, y:60, w:90, h:20
         if (tx > 190 && tx < 280 && ty > 60 && ty < 80) {
             openPack();
             e.preventDefault();
@@ -524,7 +523,6 @@ window.addEventListener('mousedown', e => {
     initAudio();
     if (trySkipDialog()) return; 
 
-    // Нажатие на кнопку пака мышью
     if (inventoryOpen && packAnimTimer === 0) {
         if (mousePos.x > 190 && mousePos.x < 280 && mousePos.y > 60 && mousePos.y < 80) {
             openPack();
@@ -717,8 +715,8 @@ let racingTimer = 0;
 let roadOffset = 0;
 let racingObstacles = [];
 let allies = [
-    {x: 60, y: 170, baseX: 60, color: '#f59e0b', name: 'Елистратов', speed: 0.002},
-    {x: 230, y: 170, baseX: 230, color: '#10b981', name: 'Блядович', speed: 0.0025}
+    {x: 60, y: 170, baseX: 60, color: '#ea580c', name: 'Елистратов', speed: 0.002},
+    {x: 230, y: 170, baseX: 230, color: '#059669', name: 'Блядович', speed: 0.0025}
 ];
 
 // КАТ-СЦЕНА ПЕРЕД ГОНКОЙ
@@ -773,7 +771,7 @@ const player = {
     armor: 'red_scarf',
     hasArmoredScarf: false,
 
-    packs: 0, // КОЛ-ВО ПАКОВ ИГРОКА
+    packs: 0, 
     holdingItem: null,
     holdTimer: 0
 };
@@ -784,7 +782,6 @@ const npcMitra = {
     freed: false
 };
 
-// СУНДУКИ ТЕПЕРЬ ДАЮТ ПАКИ
 let chests = [
     { x: 34, y: 80, item: 'pack', opened: false, name: 'САБ-ПАК' },
     { x: 270, y: 80, item: 'pack', opened: false, name: 'САБ-ПАК' }
@@ -837,7 +834,7 @@ function tryDropPotion(x, y, forcedType) {
         if (roll < 0.40) type = 'potion_hp';
         else if (roll < 0.70) type = 'potion_sp';
         else if (roll < 0.90) type = 'star_hype';
-        else type = 'pack_drop'; // 10% ШАНС ВЫПАДЕНИЯ ПАКА
+        else type = 'pack_drop'; 
     }
 
     if (drops.length < 15) {
@@ -991,7 +988,6 @@ function startRoomTransition(targetRoom) {
     projectiles = []; playerShots = []; spawnPortals = [];
 }
 
-// ПЕРЕХОД К КАТ-СЦЕНЕ
 function triggerRaceCutscene() {
     gameState = 'CUTSCENE_RACE';
     boss.active = false;
@@ -1004,7 +1000,6 @@ function triggerRaceCutscene() {
     playSound('fanfare');
 }
 
-// СТАРТ ГОНКИ
 function startRacingLevel() {
     gameState = 'RACING';
     racingTimer = 1200; 
@@ -1116,12 +1111,19 @@ function draw16BitMitraAndCage(m) {
     const mx = m.x | 0, my = m.y | 0;
     drawShadow(mx, my + 4, 16, 12);
 
+    ctx.fillStyle = '#451a03'; ctx.fillRect(mx + 1, my + 1, 14, 14);
     ctx.fillStyle = '#78350f'; ctx.fillRect(mx + 2, my + 2, 12, 12);
-    ctx.fillStyle = '#92400e'; ctx.fillRect(mx + 3, my + 1, 10, 3);
-    ctx.fillStyle = '#fed7aa'; ctx.fillRect(mx + 8, my + 6, 8, 7);
-    ctx.fillStyle = '#000';    ctx.fillRect(mx + 10, my + 7, 2, 2);
-    ctx.fillStyle = '#000';    ctx.fillRect(mx + 15, my + 9, 2, 2);
-    ctx.fillStyle = '#ea580c'; ctx.fillRect(mx + 4, my + 13, 3, 2); ctx.fillRect(mx + 10, my + 13, 3, 2);
+    ctx.fillStyle = '#92400e'; ctx.fillRect(mx + 3, my + 3, 10, 4);
+
+    ctx.fillStyle = '#fed7aa'; ctx.fillRect(mx + 5, my + 6, 10, 8);
+    ctx.fillStyle = '#ffedd5'; ctx.fillRect(mx + 6, my + 7, 4, 3); 
+
+    ctx.fillStyle = '#000'; ctx.fillRect(mx + 13, my + 9, 3, 2); 
+
+    ctx.fillStyle = '#000'; ctx.fillRect(mx + 9, my + 7, 2, 3);
+    ctx.fillStyle = '#fff'; ctx.fillRect(mx + 10, my + 7, 1, 1); 
+
+    ctx.fillStyle = '#ea580c'; ctx.fillRect(mx + 6, my + 14, 3, 2); ctx.fillRect(mx + 11, my + 14, 3, 2);
 
     if (!m.freed) {
         ctx.fillStyle = '#475569';
@@ -1152,7 +1154,6 @@ function draw16BitPotion(d) {
         ctx.fillStyle = '#fbbf24'; ctx.fillRect(dx + 1, dy + 1, 6, 6);
         ctx.fillStyle = '#fff'; ctx.fillRect(dx + 2, dy + 2, 2, 2);
     } else if (d.type === 'pack_drop') {
-        // Отрисовка мини-лутбокса на земле
         ctx.fillStyle = '#a855f7'; ctx.fillRect(dx + 1, dy, 6, 8);
         ctx.fillStyle = '#fbbf24'; ctx.fillRect(dx + 3, dy, 2, 8); ctx.fillRect(dx + 1, dy + 3, 6, 2);
     }
@@ -1234,33 +1235,86 @@ function draw16BitPenguin(p) {
     }
 }
 
+// ОТКАТ К МИНИМАЛИСТИЧНОМУ ФАВОРИТУ
+function draw16BitFavoritStreamer(x, y) {
+    ctx.fillStyle = '#3e2723';
+    ctx.fillRect(x + 12, y, 24, 10); ctx.fillRect(x + 8, y + 4, 32, 8);
+    ctx.fillStyle = '#ffd1b3'; ctx.fillRect(x + 12, y + 10, 24, 22);
+    ctx.fillStyle = '#3e2723'; ctx.fillRect(x + 16, y + 16, 4, 3); ctx.fillRect(x + 28, y + 16, 4, 3);
+    ctx.fillStyle = '#b71c1c'; ctx.fillRect(x + 20, y + 24, 8, 3);
+    ctx.fillStyle = '#6d4c41'; ctx.fillRect(x + 16, y + 28, 16, 3);
+
+    // Синяя футболка Эвертона
+    ctx.fillStyle = '#003399'; ctx.fillRect(x + 4, y + 32, 40, 36);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 18, y + 32, 12, 6);
+    ctx.fillStyle = '#003399'; ctx.fillRect(x + 22, y + 32, 4, 4);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 10, y + 40, 6, 6);
+
+    // Микрофон
+    ctx.fillStyle = '#475569'; ctx.fillRect(x + 28, y + 38, 10, 16);
+    ctx.fillStyle = '#94a3b8'; ctx.fillRect(x + 30, y + 36, 6, 8);
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(x + 32, y + 54, 2, 14);
+}
+
+// ОБНОВЛЕННЫЙ БОСС (Генерал Человек)
 function draw16BitBoss(b) {
     const bx = b.x | 0, by = b.y | 0;
     drawShadow(bx, by, b.w, b.h);
     if (b.invul > 0 && b.invul % 4 > 2) return;
 
-    ctx.fillStyle = b.isRage ? '#991b1b' : '#0f172a';
-    ctx.fillRect(bx + 2, by, 24, 30); ctx.fillRect(bx, by + 4, 28, 24);
-    ctx.fillStyle = b.isRage ? '#dc2626' : '#15803d';
-    ctx.fillRect(bx + 4, by + 1, 20, 7);
-    ctx.fillStyle = '#fbbf24'; ctx.fillRect(bx + 11, by + 3, 6, 4);
+    const skinColor = b.isRage ? '#fca5a5' : '#fbcfe8';
+    const uniformDark = b.isRage ? '#7f1d1d' : '#0f172a';
+    const uniformLight = b.isRage ? '#b91c1c' : '#1e293b';
+    const epaulettes = '#fbbf24'; 
+    
+    // Тело (Киттель)
+    ctx.fillStyle = uniformDark; ctx.fillRect(bx + 2, by + 12, 24, 20);
+    ctx.fillStyle = uniformLight; ctx.fillRect(bx + 6, by + 12, 16, 20);
+    
+    // Эполеты (Погоны)
+    ctx.fillStyle = epaulettes; ctx.fillRect(bx, by + 12, 6, 3); ctx.fillRect(bx + 22, by + 12, 6, 3);
+    
+    // Медали
+    ctx.fillStyle = '#fbbf24'; ctx.fillRect(bx + 16, by + 16, 2, 2); ctx.fillRect(bx + 19, by + 16, 2, 2);
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(bx + 16, by + 18, 2, 2); ctx.fillStyle = '#38bdf8'; ctx.fillRect(bx + 19, by + 18, 2, 2);
 
-    ctx.fillStyle = b.isRage ? '#fca5a5' : '#fbcfe8';
-    ctx.fillRect(bx + 6, by + 10, 16, 9);
-    ctx.fillStyle = '#111'; ctx.fillRect(bx + 8, by + 12, 3, 2); ctx.fillRect(bx + 17, by + 12, 3, 2);
-    ctx.fillStyle = '#881337'; ctx.fillRect(bx + 12, by + 16, 4, 1);
-
-    ctx.fillStyle = b.isRage ? '#991b1b' : '#166534';
-    ctx.fillRect(bx + 4, by + 19, 20, 11);
-    ctx.fillStyle = '#fbbf24'; ctx.fillRect(bx + 2, by + 19, 4, 4); ctx.fillRect(bx + 22, by + 19, 4, 4);
-
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(bx + 5, by + 23, 18, 9);
-    ctx.fillStyle = b.isRage ? '#ef4444' : '#22c55e'; ctx.fillRect(bx + 13, by + 24, 3, 3);
-    ctx.fillStyle = '#38bdf8'; ctx.fillRect(bx + 18, by + 25, 2, 2);
+    // Шея и Лицо
+    ctx.fillStyle = skinColor; ctx.fillRect(bx + 8, by + 2, 12, 10);
+    
+    // Волосы / Фуражка (Командирская кепка)
+    ctx.fillStyle = uniformDark; ctx.fillRect(bx + 6, by - 2, 16, 4);
+    ctx.fillStyle = '#111'; ctx.fillRect(bx + 4, by + 2, 20, 2); // Козырек
+    ctx.fillStyle = epaulettes; ctx.fillRect(bx + 13, by - 1, 2, 2); // Золотая кокарда
+    
+    // Глаза
+    ctx.fillStyle = '#fff'; ctx.fillRect(bx + 9, by + 5, 3, 2); ctx.fillRect(bx + 16, by + 5, 3, 2);
+    ctx.fillStyle = b.isRage ? '#ef4444' : '#000'; 
+    ctx.fillRect(bx + 10, by + 5, 1, 2); ctx.fillRect(bx + 17, by + 5, 1, 2);
+    // Брови
+    ctx.fillStyle = '#000'; ctx.fillRect(bx + 8, by + 4, 4, 1); ctx.fillRect(bx + 16, by + 4, 4, 1);
+    
+    // Рот
+    ctx.fillStyle = '#000'; ctx.fillRect(bx + 12, by + 9, 4, 2);
+    ctx.fillStyle = '#fff'; ctx.fillRect(bx + 12, by + 9, 4, 1); 
+    
+    // Руки (Рукава кителя)
+    ctx.fillStyle = uniformDark; ctx.fillRect(bx - 2, by + 15, 6, 8); ctx.fillRect(bx + 24, by + 15, 6, 8);
+    // Кисти рук
+    ctx.fillStyle = skinColor; ctx.fillRect(bx, by + 23, 4, 4); ctx.fillRect(bx + 24, by + 23, 4, 4);
+    
+    // Геймпад в руках (ИСПРАВЛЕННАЯ ОТРИСОВКА БЕЗ roundRect)
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(bx + 8, by + 24, 12, 8);
+    ctx.fillRect(bx + 4, by + 26, 20, 4);
+    ctx.fillRect(bx + 6, by + 25, 16, 6);
+    
+    ctx.fillStyle = '#22c55e'; ctx.fillRect(bx + 18, by + 25, 2, 2); 
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(bx + 20, by + 27, 2, 2); 
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(bx + 6, by + 26, 4, 4); 
 
     if (b.state === 'OVERHEAT') {
         if (Math.floor(Date.now() / 200) % 2 === 0) {
-            ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 7px monospace'; ctx.fillText("БЕЙ!", bx + 6, by - 6);
+            ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 7px monospace'; ctx.fillText("БЕЙ!", bx + 6, by - 8);
         }
     }
 }
@@ -1270,10 +1324,19 @@ function draw16BitMinion(m) {
     drawShadow(mx, my, 14, 14);
     if (m.invul > 0 && m.invul % 4 > 2) return;
 
-    ctx.fillStyle = '#4c1d95'; ctx.fillRect(mx + 1, my, 12, 14);
-    ctx.fillStyle = '#9333ea'; ctx.fillRect(mx + 2, my + 2, 10, 10);
-    ctx.fillStyle = '#09090b'; ctx.fillRect(mx + 2, my + 5, 10, 3);
-    ctx.fillStyle = '#e2e8f0'; ctx.fillRect(mx + 3, my + 5, 2, 1); ctx.fillRect(mx + 8, my + 5, 2, 1);
+    const bounce = (Math.floor(Date.now() / 150) % 2 === 0) ? -1 : 0;
+
+    ctx.fillStyle = '#4c1d95'; ctx.fillRect(mx + 1, my + bounce, 14, 14);
+    ctx.fillStyle = '#7c3aed'; ctx.fillRect(mx + 2, my + 1 + bounce, 12, 12);
+    ctx.fillStyle = '#9333ea'; ctx.fillRect(mx + 4, my + 2 + bounce, 8, 4); 
+
+    ctx.fillStyle = '#000'; ctx.fillRect(mx + 3, my + 5 + bounce, 4, 3); ctx.fillRect(mx + 9, my + 5 + bounce, 4, 3);
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(mx + 4, my + 6 + bounce, 2, 1); ctx.fillRect(mx + 10, my + 6 + bounce, 2, 1); 
+
+    ctx.fillStyle = '#000'; ctx.fillRect(mx + 4, my + 10 + bounce, 8, 2);
+    ctx.fillStyle = '#fff'; ctx.fillRect(mx + 4, my + 10 + bounce, 2, 1); ctx.fillRect(mx + 7, my + 10 + bounce, 2, 1); ctx.fillRect(mx + 10, my + 10 + bounce, 2, 1);
+
+    ctx.fillStyle = '#3b0764'; ctx.fillRect(mx + 2, my + 14, 4, 2); ctx.fillRect(mx + 10, my + 14, 4, 2);
 
     if (m.freezeTimer > 0) {
         ctx.fillStyle = 'rgba(165, 243, 252, 0.7)';
@@ -1283,43 +1346,57 @@ function draw16BitMinion(m) {
     }
 }
 
-function draw16BitFavoritStreamer(x, y) {
-    ctx.fillStyle = '#3e2723';
-    ctx.fillRect(x + 12, y, 24, 10); ctx.fillRect(x + 8, y + 4, 32, 8);
-    ctx.fillStyle = '#ffd1b3'; ctx.fillRect(x + 12, y + 10, 24, 22);
-    ctx.fillStyle = '#3e2723'; ctx.fillRect(x + 16, y + 16, 4, 3); ctx.fillRect(x + 28, y + 16, 4, 3);
-    ctx.fillStyle = '#b71c1c'; ctx.fillRect(x + 20, y + 24, 8, 3);
-    ctx.fillStyle = '#6d4c41'; ctx.fillRect(x + 16, y + 28, 16, 3);
-
-    ctx.fillStyle = '#003399'; ctx.fillRect(x + 4, y + 32, 40, 36);
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 18, y + 32, 12, 6);
-    ctx.fillStyle = '#003399'; ctx.fillRect(x + 22, y + 32, 4, 4);
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 10, y + 40, 6, 6);
-
-    ctx.fillStyle = '#475569'; ctx.fillRect(x + 28, y + 38, 10, 16);
-    ctx.fillStyle = '#94a3b8'; ctx.fillRect(x + 30, y + 36, 6, 8);
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(x + 32, y + 54, 2, 14);
-}
-
-function draw16BitKart(kx, ky, col) {
-    drawShadow(kx, ky, 20, 28);
+function draw16BitKart(kx, ky, col, name) {
+    drawShadow(kx - 4, ky, 28, 30);
+    
     ctx.fillStyle = '#09090b';
-    ctx.fillRect(kx - 4, ky + 4, 4, 8); ctx.fillRect(kx + 16, ky + 4, 4, 8);
-    ctx.fillRect(kx - 4, ky + 18, 4, 8); ctx.fillRect(kx + 16, ky + 18, 4, 8);
+    ctx.fillRect(kx - 4, ky + 4, 6, 10); ctx.fillRect(kx + 18, ky + 4, 6, 10);
+    ctx.fillRect(kx - 4, ky + 16, 6, 10); ctx.fillRect(kx + 18, ky + 16, 6, 10);
+    ctx.fillStyle = '#475569'; 
+    ctx.fillRect(kx - 3, ky + 7, 2, 4); ctx.fillRect(kx + 19, ky + 7, 2, 4);
+    ctx.fillRect(kx - 3, ky + 19, 2, 4); ctx.fillRect(kx + 19, ky + 19, 2, 4);
+
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(kx + 2, ky, 16, 30); 
     ctx.fillStyle = col;
-    ctx.fillRect(kx + 4, ky, 8, 28);
-    ctx.fillRect(kx, ky + 12, 16, 10);
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(kx + 4, ky + 14, 8, 6);
-    ctx.fillStyle = '#fff'; ctx.fillRect(kx + 6, ky + 15, 4, 4);
+    ctx.fillRect(kx + 6, ky - 2, 8, 30); 
+    ctx.fillRect(kx + 2, ky + 12, 16, 14); 
+    
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(kx + 9, ky, 2, 12); 
+
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(kx, ky + 26, 20, 4);
+    ctx.fillStyle = col; ctx.fillRect(kx + 2, ky + 27, 16, 2);
+
+    ctx.fillStyle = '#000'; ctx.fillRect(kx + 4, ky + 14, 12, 8);
+
+    if (name === "Шипкер") {
+        ctx.fillStyle = '#09090b'; ctx.fillRect(kx + 6, ky + 13, 8, 8);
+        ctx.fillStyle = '#fff'; ctx.fillRect(kx + 7, ky + 15, 6, 4);
+        ctx.fillStyle = '#000'; ctx.fillRect(kx + 8, ky + 16, 1, 1); ctx.fillRect(kx + 11, ky + 16, 1, 1);
+        ctx.fillStyle = '#f59e0b'; ctx.fillRect(kx + 9, ky + 17, 2, 2); 
+    } else if (name === "Елистратов") {
+        ctx.fillStyle = '#ea580c'; ctx.beginPath(); ctx.arc(kx+10, ky+16, 4, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#000'; ctx.fillRect(kx+7, ky+15, 6, 2); 
+    } else if (name === "Блядович") {
+        ctx.fillStyle = '#059669'; ctx.beginPath(); ctx.arc(kx+10, ky+16, 4, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#000'; ctx.fillRect(kx+7, ky+15, 6, 2); 
+    } else {
+        ctx.fillStyle = '#fff'; ctx.fillRect(kx + 6, ky + 15, 4, 4);
+    }
 }
 
+// ИСПРАВЛЕННАЯ ОТРИСОВКА (Без roundRect, чтобы не зависало на телефонах)
 function draw16BitXboxKart(kx, ky) {
     drawShadow(kx, ky, 32, 24);
     ctx.fillStyle = '#f59e0b';
     ctx.fillRect(kx + 8, ky - 6 + Math.random() * 4, 4, 6);
     ctx.fillRect(kx + 20, ky - 6 + Math.random() * 4, 4, 6);
+    
     ctx.fillStyle = '#e2e8f0';
-    ctx.beginPath(); ctx.roundRect(kx, ky, 32, 20, 8); ctx.fill();
+    ctx.fillRect(kx + 4, ky, 24, 20);
+    ctx.fillRect(kx, ky + 4, 32, 12);
+    ctx.fillRect(kx + 2, ky + 2, 28, 16);
+    
     ctx.fillRect(kx + 12, ky + 4, 8, 20);
     ctx.fillStyle = '#1e293b'; ctx.fillRect(kx + 6, ky + 12, 6, 6);
     ctx.fillStyle = '#22c55e'; ctx.fillRect(kx + 22, ky + 14, 3, 3);
@@ -1361,14 +1438,14 @@ function drawRacingWorld() {
     draw16BitXboxKart(boss.x, boss.y);
 
     allies.forEach(a => {
-        draw16BitKart(a.x, a.y, a.color);
+        draw16BitKart(a.x, a.y, a.color, a.name);
         ctx.fillStyle = '#fff'; 
         ctx.font = 'bold 8px monospace';
         ctx.fillText(a.name, a.x - 4, a.y - 4);
     });
 
     if (player.invul === 0 || player.invul % 4 > 2) {
-        draw16BitKart(player.x, player.y, '#0284c7');
+        draw16BitKart(player.x, player.y, '#0284c7', 'Шипкер');
         ctx.fillStyle = '#38bdf8'; 
         ctx.font = 'bold 8px monospace';
         ctx.fillText("Шипкер", player.x - 2, player.y - 4);
@@ -1679,7 +1756,6 @@ function drawUI() {
         ctx.fillText("ОТКРЫТЬ ПАК", 425, 145);
     }
 
-    // --- АНИМАЦИЯ ОТКРЫТИЯ ПАКА (КАРТОЧКА) ---
     if (packAnimTimer > 0 && packReward) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
         ctx.fillRect(0, 0, 640, 448);
@@ -1687,7 +1763,6 @@ function drawUI() {
         ctx.save();
         ctx.translate(320, 224);
         
-        // Вращающиеся лучи
         ctx.rotate(Date.now() * 0.002);
         for(let i = 0; i < 12; i++) {
             ctx.fillStyle = (i % 2 === 0) ? packReward.color : 'rgba(255,255,255,0.05)';
@@ -1698,7 +1773,6 @@ function drawUI() {
         }
         ctx.restore();
         
-        // Зум карточки
         let scale = 1;
         if (packAnimTimer > 150) {
             scale = (180 - packAnimTimer) / 30;
@@ -1710,7 +1784,6 @@ function drawUI() {
         ctx.translate(320, 224);
         ctx.scale(scale, scale);
         
-        // Отрисовка самой карты
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(-90, -130, 180, 260);
         ctx.strokeStyle = packReward.color;
@@ -1726,7 +1799,6 @@ function drawUI() {
         ctx.font = 'bold 16px monospace';
         ctx.fillText(packReward.name, 0, 90);
         
-        // Иконка
         ctx.font = '60px monospace';
         if (packReward.id === 'golden_fish') ctx.fillText("🐟", 0, 20);
         if (packReward.id === 'armored_scarf') ctx.fillText("🧣", 0, 20);
@@ -1850,7 +1922,6 @@ function drawRaceCutscene() {
 
 // --- UPDATE LOOP ---
 function update() {
-    // ЛОГИКА АНИМАЦИИ ОТКРЫТИЯ ПАКА (Блокирует всё остальное)
     if (packAnimTimer > 0) {
         packAnimTimer--;
         if (packAnimTimer === 30 && packReward) {
@@ -2093,7 +2164,7 @@ function update() {
                 if (slashBox.x < c.x + 16 && slashBox.x + slashBox.w > c.x &&
                     slashBox.y < c.y + 14 && slashBox.y + slashBox.h > c.y) {
                     c.opened = true;
-                    player.packs += 2; // ТЕПЕРЬ СУНДУКИ ДАЮТ ПО 2 ПАКА
+                    player.packs += 2;
                     playSound('fanfare');
                     spawnSparks(c.x + 8, c.y + 7, '#fbbf24', 8);
                     dialog = { speaker: "НАХОДКА!", text: "Получено 2 САБ-ПАКА! Зайди в [ИНВЕНТАРЬ], чтобы открыть их как карточки!", timer: 240, portrait: 'penguin' };
@@ -2323,7 +2394,7 @@ function update() {
 
         if (slashBox && boss.invul === 0) {
             if (slashBox.x < boss.x + boss.w && slashBox.x + slashBox.w > boss.x &&
-                slashBox.y < boss.y + boss.h && slashBox.y + slashBox.h > boss.y) {
+                slashBox.y < boss.y + boss.h && slashBox.y + boss.h > boss.y) {
                 const totalDmg = player.isSliding ? (baseDamage + 2) : baseDamage;
                 boss.hp -= totalDmg; boss.invul = 20; boss.hitStun = 12;
                 addHype(18); screenShake = 6; playSound('hit');
